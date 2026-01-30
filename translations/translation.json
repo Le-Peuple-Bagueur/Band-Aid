@@ -1,0 +1,102 @@
+{
+  "cultural_date_format": "%Y-%m-%d",
+  "languages": ["en", "fr"],
+  "translation": [
+    { "en": "Band-Aid", "fr": "Band-Aid" },
+
+    { "en": "Upload & Filters", "fr": "Téléversement et filtres" },
+    { "en": "Font size", "fr": "Taille de police" },
+
+    { "en": "Table", "fr": "Tableau" },
+    { "en": "Encounter Map", "fr": "Carte des retours de bagues" },
+
+    { "en": "Upload data (CSV or Excel)", "fr": "Téléverser des données (CSV ou Excel)" },
+
+    {
+      "en": "CSV had inconsistent values. Loaded with fallback mode: all columns as text + skipped faulty rows. If you need numeric filtering for some columns, we can force types.",
+      "fr": "Le CSV contenait des valeurs incohérentes. Chargement en mode de repli : toutes les colonnes en texte et les lignes fautives ont été ignorées. Si vous avez besoin de filtres numériques pour certaines colonnes, on peut forcer les types."
+    },
+
+    { "en": "Unsupported file type:", "fr": "Type de fichier non pris en charge :" },
+    { "en": "Uploaded table has no columns", "fr": "La table importée ne contient aucune colonne" },
+
+    { "en": "Number of filters", "fr": "Nombre de filtres" },
+    { "en": "Logic", "fr": "Logique" },
+    { "en": "AND", "fr": "ET" },
+    { "en": "OR", "fr": "OU" },
+
+    { "en": "Field", "fr": "Champ" },
+    { "en": "Operator", "fr": "Opérateur" },
+
+    { "en": "between", "fr": "entre" },
+    { "en": "in", "fr": "dans" },
+    { "en": "not in", "fr": "pas dans" },
+
+    { "en": "Apply", "fr": "Appliquer" },
+    { "en": "Reset", "fr": "Réinitialiser" },
+
+    { "en": "CSV", "fr": "CSV" },
+    { "en": "Excel (preview)", "fr": "Excel (aperçu)" },
+
+    { "en": "Value", "fr": "Valeur" },
+    { "en": "Value (limited list; type to search)", "fr": "Valeur (liste limitée; tapez pour rechercher)" },
+    { "en": "Type to search…", "fr": "Tapez pour rechercher…" },
+
+    { "en": "Active filters: ", "fr": "Filtres actifs : " },
+
+    { "en": "Add Species and Station Names", "fr": "Ajouter les noms d’espèces et de stations" },
+    { "en": "Species", "fr": "Espèces" },
+    { "en": "Stations", "fr": "Stations" },
+
+    { "en": "Merge with species file", "fr": "Fusionner avec un fichier d’espèces" },
+    { "en": "Upload species file (CSV or Excel)", "fr": "Téléverser le fichier d’espèces (CSV ou Excel)" },
+    { "en": "Base join field (base data)", "fr": "Champ de jointure (données de base)" },
+    { "en": "Species join field (species file)", "fr": "Champ de jointure (fichier d’espèces)" },
+    { "en": "Apply species merge", "fr": "Appliquer la fusion des espèces" },
+
+    { "en": "Merge with station file", "fr": "Fusionner avec un fichier de stations" },
+    { "en": "Upload stations file (CSV or Excel)", "fr": "Téléverser le fichier de stations (CSV ou Excel)" },
+    { "en": "Latitude field (stations)", "fr": "Champ latitude (stations)" },
+    { "en": "Longitude field (stations)", "fr": "Champ longitude (stations)" },
+    { "en": "Apply stations merge", "fr": "Appliquer la fusion des stations" },
+
+    { "en": "Download CSV", "fr": "Télécharger CSV" },
+    { "en": "Download Excel", "fr": "Télécharger Excel" },
+
+    { "en": "Base data missing selected join field:", "fr": "Les données de base n’ont pas le champ de jointure sélectionné :" },
+    { "en": "Species file missing selected join field:", "fr": "Le fichier d’espèces n’a pas le champ de jointure sélectionné :" },
+    { "en": "Species file must contain:", "fr": "Le fichier d’espèces doit contenir :" },
+
+    { "en": "Species merge successful", "fr": "Fusion des espèces réussie" },
+    { "en": "Stations merge successful", "fr": "Fusion des stations réussie" },
+    { "en": "Base data missing GISBLat / GISBLong", "fr": "Les données de base n’ont pas GISBLat / GISBLong" },
+
+    { "en": "rows", "fr": "lignes" },
+    { "en": "using base", "fr": "avec base" },
+    { "en": "species", "fr": "espèces" },
+
+    { "en": "Marker size", "fr": "Taille des marqueurs" },
+    { "en": "Jitter overlapping points", "fr": "Décaler les points superposés" },
+    { "en": "Jitter strength", "fr": "Intensité du décalage" },
+    { "en": "Max jitter (pixels)", "fr": "Décalage maximal (pixels)" },
+
+    { "en": "Select all", "fr": "Tout sélectionner" },
+    { "en": "Select none", "fr": "Tout désélectionner" },
+
+    { "en": "Species draw order", "fr": "Ordre de dessin des espèces" },
+    { "en": "Station draw order", "fr": "Ordre de dessin des stations" },
+    { "en": "Draw order (top → bottom)", "fr": "Ordre de dessin (haut → bas)" },
+
+{ "en": "No station", "fr": "Aucune station" },
+{ "en": "Station markers", "fr": "Marqueurs de station" },
+{ "en": "Centroids", "fr": "Centroïdes" },
+{ "en": "Most recent", "fr": "Plus récent" },
+
+    { "en": "Export size", "fr": "Taille d’exportation" },
+    { "en": "Match app", "fr": "Comme l’application" },
+    { "en": "Download map (JPEG)", "fr": "Télécharger la carte (JPEG)" },
+
+    { "en": "Stations not shown (no station merge applied).", "fr": "Stations non affichées (aucune fusion de stations appliquée)." },
+    { "en": "Missing required fields:", "fr": "Champs requis manquants :" }
+  ]
+}
