@@ -1,3 +1,9 @@
+INSTRUCTIONS TO MAINTAINER WHEN STARTING FROM SCRATCH
+  GO TO PART A3 IF YOU HAVE TO UPDATE SOME R SCRIPT FILES
+  GO TO PART B AND C TO CREATE A FRESH COPY OF THE APP AND DISTRIBUTE
+  GO TO PART D FOR INSTRUCTIONS TO USERS
+  
+
 Part A — Maintainer instructions (no Terminal, no Git)
 Step 1 — Create the GitHub repository (one-time)
 
@@ -101,4 +107,4 @@ Double‑click run_app.bat (Windows)
 (or run_app.command on Mac, if you support Macs)
 
 
-The app opens in their browser and runs locally [stackoverflow.com]
+The app opens in their browser and runs locally 
