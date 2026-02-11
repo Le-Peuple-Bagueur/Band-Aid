@@ -51,6 +51,8 @@ Part A — Maintainer instructions
       run_app.R
       run_app.bat
       (run_app.command optional)
+      Look Ups/tables to merge
+      wwww/bird.gif
   
   Step 3 — When you update the app (your normal maintenance loop)
     Whenever you change code:
