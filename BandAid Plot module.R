@@ -26,6 +26,54 @@ get_tr <- function() {
   function(x) x
 }
 
+# ---- webshot/chrome helpers ----
+ensure_chromote_chrome <- function() {
+  # If already set and exists, keep it
+  cur <- Sys.getenv("CHROMOTE_CHROME", "")
+  if (nzchar(cur) && file.exists(cur)) return(cur)
+  
+  candidates <- c(
+    "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
+    "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+  )
+  hit <- candidates[file.exists(candidates)]
+  if (length(hit)) {
+    Sys.setenv(CHROMOTE_CHROME = hit[[1]])
+    return(hit[[1]])
+  }
+  # Nothing found; let chromote try its own discovery
+  return(NULL)
+}
+
+win_normpath <- function(p) normalizePath(p, winslash = "/", mustWork = FALSE)
+
+
+# ---- webshot/chrome helpers ----
+ensure_chromote_chrome <- function() {
+  # If already set and exists, keep it
+  cur <- Sys.getenv("CHROMOTE_CHROME", "")
+  if (nzchar(cur) && file.exists(cur)) return(cur)
+  
+  candidates <- c(
+    "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
+    "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+  )
+  hit <- candidates[file.exists(candidates)]
+  if (length(hit)) {
+    Sys.setenv(CHROMOTE_CHROME = hit[[1]])
+    return(hit[[1]])
+  }
+  # Nothing found; let chromote try its own discovery
+  return(NULL)
+}
+
+win_normpath <- function(p) normalizePath(p, winslash = "/", mustWork = FALSE)
+
+
 # =========================================================
 # UI
 # =========================================================
@@ -724,14 +772,42 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
       ignoreInit = FALSE
     )
     
+    # ---- Preflight: make sure webshot2/chromote sees a Chrome/Edge binary ----
+    ensure_chrome <- local({
+      ran <- FALSE
+      function() {
+        if (ran) return(invisible(TRUE))
+        ran <<- TRUE
+        # If chromote doesn't find a browser, try the two common Edge paths on Windows.
+        ok <- tryCatch(!is.null(chromote::find_chrome()), error = function(e) FALSE)
+        if (!ok) {
+          paths <- c(
+            "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
+            "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+          )
+          for (p in paths) {
+            if (file.exists(p)) {
+              Sys.setenv(CHROMOTE_CHROME = p)
+              break
+            }
+          }
+        }
+        invisible(TRUE)
+      }
+    })
+    
     # -----------------------------------------------------
     # JPEG Export (matches on-screen logic, including station filtering AND no-station marker exclusion)
     # -----------------------------------------------------
     output$download_map_jpeg <- downloadHandler(
       filename = function() paste0("BandAid_map_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".jpg"),
+      contentType = "image/jpeg",
       content = function(file) {
         req(active_tab() == "map")
         req(lang()); sync_i18n_lang(lang())
+        
+        # 1) Ensure a Chrome/Edge binary is available for webshot2/chromote
+        ensure_chrome()  # finds/sets CHROMOTE_CHROME if needed  (see chromote::find_chrome docs)  # [3](https://rstudio.github.io/chromote/reference/find_chrome.html)
         
         df <- plot_data(); req(df)
         
@@ -748,14 +824,11 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
         pal_fun <- leaflet::colorFactor(palette = cols, domain = ids, na.color = "#808080")
         
         if (stations_ready()) {
-          st_levels <- sort(unique(df$station_id))
-          st_levels <- st_levels[!is.na(st_levels)]
+          st_levels <- sort(unique(df$station_id)); st_levels <- st_levels[!is.na(st_levels)]
           st_selected <- input$station_selected %||% st_levels
-          
           vp <- df |> dplyr::filter(English_Name %in% sp_selected, station_id %in% st_selected)
         } else {
           vp <- df |> dplyr::filter(English_Name %in% sp_selected)
-          st_selected <- NULL
         }
         
         vp <- vp[order(factor(vp$English_Name, levels = sp_order)), , drop = FALSE]
@@ -784,13 +857,10 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
           )
         
         if (stations_ready()) {
-          st_levels <- sort(unique(df$station_id))
-          st_levels <- st_levels[!is.na(st_levels)]
+          st_levels <- sort(unique(df$station_id)); st_levels <- st_levels[!is.na(st_levels)]
           st_selected2 <- input$station_selected %||% st_levels
-          
           mode <- input$station_mode %||% "centroid"
           st_pts <- station_points(df, st_selected2, mode)
-          
           if (nrow(st_pts) > 0) {
             m <- m |>
               leaflet::addCircleMarkers(
@@ -809,6 +879,7 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
           m <- m |> leaflet::setView(lng = input$map_center$lng, lat = input$map_center$lat, zoom = input$map_zoom)
         }
         
+        # 2) Compute export size and FORCE INTEGERS for webshot2 (Chrome requires ints)
         dim <- input$map_dim
         w0 <- if (!is.null(dim) && !is.null(dim$w)) as.numeric(dim$w) else 1400
         h0 <- if (!is.null(dim) && !is.null(dim$h)) as.numeric(dim$h) else 900
@@ -821,18 +892,35 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
         } else if (input$export_size == "4k") {
           vheight <- 2160; vwidth <- round(vheight * aspect)
         } else {
-          vheight <- h0; vwidth <- w0
+          vheight <- h0;   vwidth <- w0
         }
+        vwidth  <- as.integer(round(vwidth))
+        vheight <- as.integer(round(vheight))
+        if (vwidth < 100)  vwidth <- 100
+        if (vheight < 100) vheight <- 100
+        # (Chromote/webshot2 failures have been observed with non-integer vwidth/vheight)  # [4](https://github.com/rstudio/chromote/issues/183)
         
-        mapview::mapshot2(
-          m,
-          file = file,
-          vwidth = vwidth,
-          vheight = vheight,
-          delay = 2,
-          remove_controls = c("zoomControl", "layersControl", "homeButton", "scaleBar", "easyButton", "control")
-        )
+        # 3) Take the snapshot (slightly longer delay helps tiles finish)
+        ok <- FALSE
+        err_msg <- NULL
+        try({
+          mapview::mapshot2(
+            m,
+            file = file,
+            vwidth = vwidth,
+            vheight = vheight,
+            delay = 2.0,  # you can bump to 3 if tiles are heavy
+            remove_controls = c("zoomControl","layersControl","homeButton","scaleBar","easyButton","control")
+          )
+          ok <- TRUE
+        }, silent = TRUE)
+        
+        if (!ok || !file.exists(file) || file.info(file)$size <= 0) {
+          showNotification(tr("Could not render the map image. Please try again or contact support."), type = "error", duration = 8)
+          stop("map export failed")
+        }
       }
     )
+    
   })
 }
