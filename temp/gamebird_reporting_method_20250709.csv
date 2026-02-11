@@ -1,0 +1,20 @@
+Why/Report Method Code,Code Description
+00,Unknown
+01,Paper
+02,Check station report (discontinued)
+06,Reported on the 1-800 telephone number
+07,Reported on the Internet
+61,"1-800 report, call center"
+62,"1-800 report, USGSBBL"
+63,"1-800 report, CWSBBO"
+64,"1-800 report, Mexico toll free line"
+11,"Paper, postal mail"
+12,Email (other than from color marker reports)
+13,Electronic color marker report
+14,"Bandit, Band Manager, or paper banding schedule"
+65,"Phone, color marker report"
+72,CWSBBO email
+73,"1-800 report, CWSBBO (added via Internet)"
+74,CWSBBO email - color marker
+75,"1-800 report, CWSBBO - color marker"
+15,Bander Portal

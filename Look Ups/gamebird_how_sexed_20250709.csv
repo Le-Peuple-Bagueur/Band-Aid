@@ -1,0 +1,35 @@
+How Sexed Code,Code Description
+E,egg in oviduct
+O,behavioral observation not including copulation
+M,mating/copulation
+B,brood patch
+C,cloacal protuberance
+W,wing chord
+T,tail length
+Y,culmen
+Z,multiple measurements
+D,DNA/chromosome analysis
+L,laparotomy/laparoscopy
+3,eye color
+0,cloacal examination (waterfowl only)
+1,adult plumage
+2,juvenal plumage
+X,Not attempted
+BO,Behavioral observation
+BP,Brood patch
+CC,Combination of characteristics/measurements
+CL,Cloaca
+DN,DNA/chromosome analysis
+EG,Egg in oviduct
+EY,Eye color
+FS,Feather Shape (Primaries or tail)
+IC,"Inconclusive, Conflicting"
+LL,Laparotomy/laparoscopy
+MB,Mouth/bill
+NA,Not attempted
+OT,Other
+PL,Body Plumage
+RC,Sexed upon recapture
+TL,Tail length
+WL,Wing length
+FF,"Flight feathers (remiges), condition or color"

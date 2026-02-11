@@ -1,0 +1,44 @@
+Add Info Code,Code Description
+--,"Banding or trapping mortality (no band, aux. marker or other info applied)."
+00,Federal numbered metal band only.
+01,"Colored leg band(s): plastic, metal, paint, tape."
+02,Neck collar - usually coded.
+03,Reward band (Federal or State).
+04,Control band (Reward band studies only).
+06,"Misc. metal band (State, Provincial etc) with address or telephone number, plus Federal band."
+07,Double-banded (Two Federal bands placed on a bird at the same time)
+08,"Temporary markers: Paint or dye; other temporary markers on feathers (imping, tape on tail)."
+09,All flight feathers on one or both wings clipped or pulled upon release.
+10,All flight feathers on one or both wings clipped or pulled plus auxiliary marker(s).
+11,Sexed by laparotomy or laparoscopy.
+12,"Sexed by laparotomy or laparoscopy, plus auxiliary marker(s)."
+14,Mouth swab.
+15,"Mouth swab, plus one or more auxiliary markers used."
+16,Tracheal swab.
+17,"Tracheal swab, plus one or more auxiliary markers used."
+18,Blood sample taken.
+19,"Blood sample taken, plus auxiliary marker(s)."
+20,Fostered or cross-fostered into wild nests.
+21,"Fostered or cross-fostered into wild nests, plus auxiliary marker(s)."
+25,Two or more types of auxiliary markers.
+29,"Miscellaneous band, Federal band, plus auxiliary marker(s)."
+30,"Double-banded with Federal bands, plus auxiliary marker(s)."
+33,"Taken from an artificial nest structure (eg, nest boxes, platforms, etc)."
+34,"Taken from an artificial nest structure, plus auxiliary marker(s)."
+39,"Wing, patagial, head, back, and/or nape tag(s)."
+40,Oiled.
+41,"Oiled, plus one or more auxiliary markers used."
+51,Nasal saddle and nasal discs or other bill marker.
+59,"Web tagged, usually coded."
+69,"Flag, streamer, or tab on leg."
+70,Captured by spotlighting.
+71,"Captured by spotlighting, plus auxiliary marker(s)."
+75,PIT tag
+80,Satellite/Cell/GPS transmitter
+81,Radio transmitter.
+85,Miscellaneous (combination or situation not covered by other ai codes).
+87,Captured with drugs or tranquilizers.
+88,"Captured with drugs or tranquilizers, plus auxiliary marker(s)."
+89,"Transmitter. (Obsolete, see 80, 81)"
+90,Data logger (including geolocators)
+99,(none).

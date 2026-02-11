@@ -197,8 +197,73 @@ ui <- fluidPage(
         border-top: var(--tab-border-thickness) solid var(--separator-color);
         padding-top: 10px;
       }
+
+      /* ==========================================
+         DT cell width control (prevents huge rows)
+         ========================================== */
+
+      .app-container { --dt-max-col-width: 240px; }  /* default */
+
+      .app-container .dataTables_wrapper table.dataTable th,
+      .app-container .dataTables_wrapper table.dataTable td {
+        max-width: var(--dt-max-col-width);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Allow user to switch to wrapped text */
+      .app-container.dt-wrap .dataTables_wrapper table.dataTable th,
+      .app-container.dt-wrap .dataTables_wrapper table.dataTable td {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
+      }
+
+      /* Make sure wide tables remain usable */
+      .app-container .dataTables_wrapper {
+        overflow-x: auto;
+      }
+
+      /* ==========================================
+         Full-screen Loading Overlay
+         ========================================== */
+      .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.85);
+        display: none;                  /* toggled via JS or shinyjs */
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(1px);
+      }
+      .loading-box {
+        text-align: center;
+        color: #0d6efd;
+        font-weight: 700;
+      }
+      .loading-box img {
+        width: 140px;
+        height: auto;
+        display: block;
+        margin: 0 auto 10px auto;
+        animation: floaty 1.8s ease-in-out infinite;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+      }
+      .loading-box .loading-text {
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+      }
+      @keyframes floaty {
+        0%   { transform: translateY(0); }
+        50%  { transform: translateY(-6px); }
+        100% { transform: translateY(0); }
+      }
     ")),
     
+    # Existing handlers
     tags$script(HTML("
       Shiny.addCustomMessageHandler('setFontSize', function(size) {
         var el = document.querySelector('.app-container');
@@ -217,6 +282,79 @@ ui <- fluidPage(
         if (el) el.open = false;
       });
     ")),
+    tags$script(HTML("
+      Shiny.addCustomMessageHandler('setDTMaxColWidth', function(px) {
+        var el = document.querySelector('.app-container');
+        if (el) el.style.setProperty('--dt-max-col-width', px);
+      });
+    ")),
+    tags$script(HTML("
+      Shiny.addCustomMessageHandler('setDTWrap', function(wrap) {
+        var el = document.querySelector('.app-container');
+        if (el) el.classList.toggle('dt-wrap', !!wrap);
+      });
+    ")),
+    
+    # Loading overlay toggler + text updates (client-side timer version)
+    tags$script(HTML("
+      (function(){
+        var loaderTimerId = null;
+        Shiny.addCustomMessageHandler('setLoading', function(isLoading) {
+          var overlay = document.getElementById('loading-overlay');
+          if (!overlay) return;
+          var elapsedEl = document.getElementById('loading-elapsed');
+
+          if (isLoading) {
+            // show overlay
+            overlay.style.display = 'flex';
+
+            // start client timer (keeps ticking even when server is busy)
+            var startTs = Date.now();
+            overlay.dataset.startTs = startTs;
+
+            if (elapsedEl) {
+              if (loaderTimerId) { clearInterval(loaderTimerId); loaderTimerId = null; }
+              loaderTimerId = setInterval(function(){
+                var sec = (Date.now() - startTs) / 1000;
+                elapsedEl.textContent = 'Elapsed: ' + sec.toFixed(1) + ' s';
+              }, 200);
+            }
+          } else {
+            // hide overlay and stop timer
+            overlay.style.display = 'none';
+            if (loaderTimerId) { clearInterval(loaderTimerId); loaderTimerId = null; }
+            if (elapsedEl) elapsedEl.textContent = '';
+            delete overlay.dataset.startTs;
+          }
+        });
+      })();
+    ")),
+    tags$script(HTML("
+      Shiny.addCustomMessageHandler('setLoadingText', function(txt) {
+        var el = document.getElementById('loading-text-msg');
+        if (el) el.textContent = txt;
+      });
+    ")),
+    
+    # Force-hide overlay on initial load (prevents any flash before first upload)
+    tags$script(HTML("
+      (function() {
+        function hideLoader() {
+          var el = document.getElementById('loading-overlay');
+          if (el) el.style.display = 'none';
+        }
+        // On initial DOM ready
+        document.addEventListener('DOMContentLoaded', hideLoader);
+        // When Shiny connects
+        if (window.jQuery) {
+          jQuery(document).on('shiny:connected', hideLoader);
+        } else if (window.$) {
+          $(document).on('shiny:connected', hideLoader);
+        }
+      })();
+    ")),
+    
+    # Sync language segmented control
     tags$script(HTML("
       function syncLangToggleActive() {
         var container = document.getElementById('lang');
@@ -241,6 +379,20 @@ ui <- fluidPage(
   
   div(
     class = "app-container",
+    
+    # Loading overlay HTML (bird GIF in /www/bird.gif)
+    div(
+      id = "loading-overlay", class = "loading-overlay", style = "display:none;",
+      div(
+        class = "loading-box",
+        tags$img(src = "bird.gif", alt = "Loading..."),
+        div(
+          class = "loading-text",
+          span(id = "loading-text-msg", tr("Loading data... Please wait")),
+          div(id = "loading-elapsed", style = "margin-top:4px; font-weight:600;")
+        )
+      )
+    ),
     
     div(
       class = "app-header",
@@ -270,7 +422,13 @@ ui <- fluidPage(
         column(
           4,
           mod_upload_ui("upload"),
-          sliderInput("font_size", tr("Font size"), min = 10, max = 18, value = 14, step = 1)
+          sliderInput("font_size", tr("Font size"), min = 10, max = 18, value = 14, step = 1),
+          
+          # DT display controls
+          sliderInput("dt_col_width", tr("Max column width (px)"),
+                      min = 80, max = 600, value = 240, step = 10),
+          
+          checkboxInput("dt_wrap", tr("Wrap cell text"), value = FALSE)
         ),
         column(8, mod_filters_ui("filters"))
       )
@@ -317,6 +475,7 @@ server <- function(input, output, session) {
     tags$strong(tr("Upload & Filters"))
   })
   
+  # Modules
   data_source <- mod_upload_server("upload", lang = reactive(input$lang))
   filtered_preview <- mod_filters_server("filters", data_source, lang = reactive(input$lang))
   final_data <- mod_table_server("table", filtered_preview, lang = reactive(input$lang))
@@ -328,8 +487,26 @@ server <- function(input, output, session) {
     lang = reactive(input$lang)
   )
   
+  # Font size -> CSS var
   observeEvent(input$font_size, {
     session$sendCustomMessage("setFontSize", paste0(input$font_size, "px"))
+  }, ignoreInit = TRUE)
+  
+  # DT width / wrap -> CSS var / class
+  observeEvent(input$dt_col_width, {
+    w <- max(80, as.integer(input$dt_col_width))
+    session$sendCustomMessage("setDTMaxColWidth", paste0(w, "px"))
+  }, ignoreInit = TRUE)
+  
+  observeEvent(input$dt_wrap, {
+    session$sendCustomMessage("setDTWrap", isTRUE(input$dt_wrap))
+  }, ignoreInit = TRUE)
+  
+  # Initialize DT UI defaults once
+  observe({
+    req(input$dt_col_width)
+    session$sendCustomMessage("setDTMaxColWidth", paste0(max(80, as.integer(input$dt_col_width)), "px"))
+    session$sendCustomMessage("setDTWrap", isTRUE(input$dt_wrap))
   })
 }
 

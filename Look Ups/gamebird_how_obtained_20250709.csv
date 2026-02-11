@@ -1,0 +1,76 @@
+How Obt Code,Code Description
+00,Found dead bird.
+01,Shot.
+02,Caught or found dead due to: starvation
+03,Caught due to: injury
+04,Caught by or due to: traps or snares OTHER THAN devices used to catch birds for banding.
+05,Killed by carnivore (not cat)
+06,Caught by or due to: rodent
+07,Caught by or due to: miscellaneous birds
+08,Caught by or due to: shrike
+09,"Caught by or due to: hawks, owls, or other raptors."
+10,"Banding Mortality: due to trap, holding device, or handling."
+11,Caught by or due to: dog
+12,Caught by or due to: cat
+13,Caught due to striking: stationary object other than wires or towers.
+14,Caught due to striking or being struck by: motor vehicle.
+15,Caught or found dead due to: weather conditions.
+16,Collected as Scientific Specimen or captured for a Scientific Study. (NOT FOR BANDING)
+17,Drowned.
+18,Caught or found dead due to disease: botulism
+19,Caught by or due to: reptile
+20,Caught due to disease.
+21,Bird caught or found dead in building or enclosure.
+22,Died from fright
+23,Caught or found dead due to: oil or tar
+24,Caught or killed due to: fall from nest.
+25,Caught or killed due to: Poisoning
+26,Caught by or due to: entanglement in fishing gear
+27,Caught by or found dead due to striking or being struck by: moving train.
+28,Caught by hand.
+29,"Saw or photographed neck collar, color band, or other marker (not federal band) while bird was free"
+30,Died in nest.
+31,Caught by or due to: miscellaneous animal.
+32,Caught due to: parasite infestation
+33,Caught or observed at or in nest.
+34,Caught or found dead due to: fish
+35,Caught by or due to: clam
+36,Caught due to: exhaustion
+37,Caught due to: electric shock
+38,Caught due to: fire
+39,Caught or found dead due to striking or being struck by: moving aircraft.
+40,Caught or found dead due to: Lead poisoning.
+41,Held for propagating
+42,Caught due to striking or being struck by: moving farm machinery.
+43,Caught or found dead due to disease: trichomoniasis
+44,"Caught or found dead due to: control operations (roost bombing, gassing, avicides, wetting agents, etc.)"
+45,Found dead or injured on highway.
+46,Caught due to: joined flock of domestic or captive birds or fowl.
+47,Band removed (no more information)
+48,Held in captivity.
+49,"Caught at, on or in nest by predator."
+50,Found dead: band with skeleton or bone only.
+51,"Banding mortality: bird killed by predators, weather, etc. while in trapping or holding devices."
+52,Saw or photographed federal band while bird was free
+53,Captured for Scientific Purposes (not collected). Status changed.
+54,"Caught due to striking: radio, TV, high tension, etc. wires or towers, or ceilometers."
+55,Caught due to: pesticides. Birds reported killed or captured as a result of spray programs. Does not include avicides.
+56,"Obtained - Letter simply states in effect ""I obtained this bird"""
+57,"Caught due to: entanglement in anything other than fishing gear, e.g., in wire, string, vines, fence, shrubs, etc."
+58,Bird located by electronic sensors
+59,Caught uninjured bird by hand
+60,Hit by motor vehicle or found dead or injured on road
+61,Found dead or caught due to disease
+62,Found dead or caught due to poisoning
+63,Struck wind turbine
+64,Killed or caught by a predator other than a cat
+66,Previously banded bird trapped and released during banding operations
+70,"Purchased, eBay, traded or received band from someone else"
+87,Sight record in a different 10-minute block from one where banded.
+88,Found nesting in a different 10-minute block from one where banded.
+89,Previously banded bird trapped and released during banding operations in different 10-minute block than where originally banded.
+91,Illegally taken
+96,Band only
+97,Miscellaneous. Method of recovery not covered by other codes.
+98,Found band or band number only (including metal detecting)
+99,Previously banded bird trapped and released during banding operations in same 10-minute block where originally banded.

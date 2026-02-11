@@ -1,0 +1,80 @@
+Band Type Code,Code Description
+00,unknown\unknown
+01,aluminum\butt-end toll free
+02,aluminum\lock-on toll free
+03,aluminum\tall toll free
+04,aluminum\butt-end new address
+05,aluminum\lock-on new address
+06,aluminum\rivet toll free
+07,aluminum\short toll free
+08,aluminum\pre-open toll free
+09,aluminum\short new address
+10,aluminum\rivet new address
+11,aluminum\butt end
+12,aluminum\lock-on
+13,aluminum\tall
+14,aluminum\wrap around
+15,aluminum\flipper
+16,aluminum\rivet
+17,aluminum\short
+18,aluminum\pre-open
+19,aluminum\tall new address
+20,aluminum\pre-open new address
+21,monel\butt end
+22,monel\lock-on
+23,monel\butt-end toll free
+24,monel\lock-on toll free
+28,monel\pre-open
+29,monel\pre-open toll free
+31,titanium\butt end
+41,aluminum\butt-end (toll-free /web address)
+42,aluminum\lock-on (toll-free /web address)
+46,aluminum\rivet (toll-free /web address)
+47,aluminum\short (toll-free /web address)
+49,incoloy or Stainless\new address
+50,incoloy or Stainless\butt-end new address
+51,incoloy or Stainless\butt-end
+52,incoloy or Stainless\lock-on
+53,incoloy or Stainless\butt-end toll free
+54,incoloy or Stainless\lock-on toll free
+55,incoloy or Stainless\flipper
+56,incoloy or Stainless\rivet
+57,incoloy or Stainless\rivet toll free
+58,incoloy or Stainless\triangular toll free
+59,incoloy or Stainless\triangular
+60,bimetallic\no address
+61,bimetallic\butt end
+62,bimetallic\lock-on
+63,bimetallic\tall
+64,incoloy or Stainless\triangular new address
+66,bimetallic\rivet
+67,bimetallic\short
+68,bimetallic\pre-open
+71,bimetallic\butt end toll free
+72,bimetallic\lock-on toll free
+73,bimetallic\tall toll free
+76,bimetallic\rivet toll free
+77,bimetallic\short toll free
+78,bimetallic\pre-open toll free
+81,stainless steel (web address)
+82,incoloy (web address)
+83,Flat-Locking Tab (hard metal)
+91,misc\butt end
+92,Frigate\Parrot band\no address
+93,Aluminum Plasticine-filled Duckling Band\toll-free
+94,aluminum\butt-end Bowie address
+95,plastic glue\butt-end raptor band (non-conductive)
+98,Banding Mortality (No band manufactured)
+99,No band manufactured (e.g. vulture bands)
+S3,stainless-steel rivet web-address
+W0,Incoloy\triangular web address
+W1,Aluminum butt-end web address
+W2,Aluminum lock-on web address
+W3,Aluminum Rivet web address
+W4,Aluminum Short web address
+W5,Stainless Steel butt-end web address
+W6,Incoloy butt-end web address
+W7,Flat Locking Tab stainless steel web address
+W8,Pre-opened stainless-steel web-address
+W9,Pre-opened incoloy web-address
+WP,Aluminum Plasticine-filled Duckling Band\web address

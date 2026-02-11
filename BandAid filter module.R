@@ -51,9 +51,42 @@ mod_filters_server <- function(id, data_source, lang) {
     }
     
     PREVIEW_LIMIT  <- 200000
-    DISTINCT_LIMIT <- 5000
+    #DISTINCT_LIMIT <- 5000
+    limit_n <- reactive({
+      # input$distinct_limit may be NULL until UI is rendered
+      x <- input$distinct_limit %||% 20000
+      # optional safety clamp:
+      x <- max(500, min(100000, as.integer(x)))
+      x
+    })
     
     result <- reactiveVal(NULL)
+    
+    # Show elapsed time in a toast when data source first becomes available
+    observeEvent(data_source(), {
+      req(data_source())
+      t0 <- session$userData$upload_start
+      if (!is.null(t0)) {
+        elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+        showNotification(sprintf(tr("Data ready in %.1f seconds"), elapsed),
+                         type = "message", duration = 8)
+        session$userData$upload_start <- NULL
+      }
+    }, ignoreInit = TRUE)
+    
+    
+    # ➕ ADD: show elapsed time from file pick to filters becoming available
+    observeEvent(data_source(), {
+      req(data_source())
+      t0 <- session$userData$upload_start
+      if (!is.null(t0)) {
+        elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+        showNotification(sprintf(tr("Data ready in %.1f seconds"), elapsed),
+                         type = "message", duration = 8)
+        session$userData$upload_start <- NULL
+      }
+    }, ignoreInit = TRUE)
+    
     
     output$filters_ui <- renderUI({
       current_lang <- lang()
@@ -64,7 +97,12 @@ mod_filters_server <- function(id, data_source, lang) {
       
       tagList(
         numericInput(session$ns("n_filters"), tr("Number of filters"), value = n, min = 1, max = 6),
-        
+        numericInput(
+          session$ns("distinct_limit"),
+          tr("Max values shown in lists"),
+          value = input$distinct_limit %||% 500,
+          min = 500, max = 100000, step = 500
+        ),
         lapply(seq_len(n), function(i) {
           fluidRow(
             if (i > 1)
@@ -82,7 +120,12 @@ mod_filters_server <- function(id, data_source, lang) {
               selectInput(
                 session$ns(paste0("col_", i)),
                 paste(tr("Field"), i),
-                choices = if (!is.null(data_source())) data_source()$cols$name else character(0)
+                choices = {
+                  if (!is.null(data_source())) {
+                    nm <- data_source()$cols$name
+                    nm[order(tolower(nm), nm, na.last = TRUE)]
+                  } else character(0)
+                }
               )
             ),
             
@@ -204,8 +247,11 @@ mod_filters_server <- function(id, data_source, lang) {
                 SELECT DISTINCT {col_sql} AS v
                 FROM {tbl}
                 WHERE {col_sql} IS NOT NULL
-                LIMIT {DISTINCT_LIMIT};
+                ORDER BY lower(CAST({col_sql} AS VARCHAR))
+                LIMIT {limit_n()};
               "))
+              
+              vals$v <- vals$v[order(tolower(as.character(vals$v)), as.character(vals$v), na.last = TRUE)]
               
               selectizeInput(
                 session$ns(paste0("val_", idx)),

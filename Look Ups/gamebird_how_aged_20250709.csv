@@ -1,0 +1,45 @@
+How Aged Code,Code Description
+S,skulling (not including pinhole windows)
+W,pinhole windows (see skulling)
+J,retained juvenal plumage (wispy tertials/notched tail etc)
+L,molt limit present
+N,molt limit absent
+P,primary covert shape and/or primary feather shape/wear
+Z,web tag (or other auxiliary marker)
+M,multiple ages of remiges (wing feathers)
+A,nestling in nest--no flight feathers present
+B,nestling in nest--flight feathers in pin
+C,"nestling recently fledged, incapable of powered flight"
+T,tail shape and tail wear
+F,feather wear in the flight feathers
+3,eye color
+0,cloacal examination (waterfowl only)
+1,adult plumage
+2,juvenal plumage
+X,not attempted
+AM,Auxiliary Marker on bird at capture
+BP,Brood patch
+BU,Bursa of Fabricius
+CA,Calendar
+CL,Cloaca
+EY,Eye color
+FF,"Flight feathers (remiges), condition or color"
+LP,Molt limit present
+MR,Actively-molting remiges
+NA,Not attempted
+NN,"Nestling in nest (altricials), downy young (precocials)"
+OT,Other
+PL,Body Plumage
+RC,Re-captured bird with USGS band
+TL,Tail length
+TS,Tail shape or  wear
+BO,Behavioral observation
+CC,Combination of characteristics/measurements
+EG,Egg in oviduct
+FB,Fault bar
+IC,"Inconclusive, Conflicting"
+MB,Mouth/bill
+NF,"Nestling recently fledged, incapable of powered flight"
+NL,No molt limit
+PC,Primary covert wear and/or shape
+SK,Skull

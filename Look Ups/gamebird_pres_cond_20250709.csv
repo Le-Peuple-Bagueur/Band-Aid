@@ -1,0 +1,16 @@
+Pres. Cond. Code,Condition of Bird,Status of Band,Condition of Bird_Francais,Status of Band_Francais
+00,UNKNOWN,UNKNOWN,Inconnu,Inconnu
+01,UNKNOWN,LEFT ON BIRD,Inconnu,Bague laissée sur l’oiseau
+02,UNKNOWN,REMOVED,Inconnu,Enlevée
+03,DEAD,UNKNOWN,Mort,Inconnu
+04,DEAD,LEFT ON BIRD,Mort,Bague laissée sur l’oiseau
+05,DEAD,REMOVED,Mort,Enlevée
+06,ALIVE - RELEASED,UNKNOWN,Vivant relâché,Inconnu
+07,ALIVE - RELEASED,LEFT ON BIRD,Vivant relâché,Bague laissée sur l’oiseau
+08,ALIVE - RELEASED,REMOVED,Vivant relâché,Enlevée
+09,ALIVE - IN CAPTIVITY,UNKNOWN,Vivant - en captivité,Inconnu
+10,ALIVE - IN CAPTIVITY,LEFT ON BIRD,Vivant - en captivité,Bague laissée sur l’oiseau
+11,ALIVE - IN CAPTIVITY,REMOVED,Vivant - en captivité,Bague enlevée
+12,ALIVE - UNKNOWN,UNKNOWN,Vivant,Inconnu
+13,ALIVE - UNKNOWN,LEFT ON BIRD,Vvant,Bague laissée sur l’oiseau
+14,ALIVE - UNKNOWN,REMOVED,Vivant,Enlevée

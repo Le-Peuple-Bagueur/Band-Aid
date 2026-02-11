@@ -1,0 +1,146 @@
+Sp. Num. (AOU Code),Species (Common Name),Species (4-letter code)
+0300,Common Murre,COMU
+0310,Thick-billed Murre,TBMU
+1290,Common Merganser,COME
+1300,Red-breasted Merganser,RBME
+1310,Hooded Merganser,HOME
+1320,Mallard,MALL
+1321,Hawaiian Duck,HAWD
+1322,Laysan Duck,LADU
+1323,Mallard X Hawaiian Duck Hybrid,MHDH
+1325,Mallard X American Black Duck Intermediate,MBDX
+1326,Mallard X American Black Duck Hybrid,MBDH
+1327,Mallard Dominant X American Black Duck Hybrid,MALX
+1330,American Black Duck,ABDU
+1331,Mexican Duck,MEDU
+1332,Pacific Black Duck,PBDU
+1337,American Black Duck Dominant X Mallard Hybrid,ABDX
+1340,Mottled Duck,MODU
+1350,Gadwall,GADW
+1360,Eurasian Wigeon,EUWI
+1370,American Wigeon,AMWI
+1371,Falcated Duck,FADU
+1380,European Green-winged Teal,EGWT
+1390,Green-winged Teal,AGWT
+1391,Baikal Teal,BATE
+1392,Garganey,GARG
+1400,Blue-winged Teal,BWTE
+1401,Unidentified Teal,UNTE
+1410,Cinnamon Teal,CITE
+1420,Northern Shoveler,NSHO
+1430,Northern Pintail,NOPI
+1431,White-cheeked Pintail,WHIP
+1436,Other Hybrid Duck,OHDU
+1440,Wood Duck,WODU
+1441,Muscovy Duck,MUDU
+1460,Redhead,REDH
+1461,Common Pochard,CPOC
+1470,Canvasback,CANV
+1480,Greater Scaup,GRSC
+1490,Lesser Scaup,LESC
+1491,Tufted Duck,TUDU
+1500,Ring-necked Duck,RNDU
+1510,Common Goldeneye,COGO
+1520,Barrow's Goldeneye,BAGO
+1530,Bufflehead,BUFF
+1540,Long-tailed Duck,LTDU
+1550,Harlequin Duck,HARD
+1570,Steller's Eider,STEI
+1580,Spectacled Eider,SPEI
+1590,Common Eider,COEI
+1620,King Eider,KIEI
+1630,Black Scoter,BLSC
+1650,White-winged Scoter,WWSC
+1660,Surf Scoter,SUSC
+1670,Ruddy Duck,RUDU
+1680,Masked Duck,MADU
+1690,Lesser Snow Goose,LSGO
+1691,Blue Goose,BLGO
+1695,Snow X Blue Goose Intergrade,SBGI
+1698,Blue Greater Snow Goose,BGSG
+1699,Greater Snow Goose,GSGO
+1700,Ross's Goose,ROGO
+1703,Snow X Ross's Goose Hybrid,SRGH
+1710,Greater White-fronted Goose,GWFG
+1711,Taiga Bean-Goose,TABG
+1712,Pink-footed Goose,PFGO
+1713,Lesser White-fronted Goose,LWFG
+1716,Other Hybrid Goose,OHGO
+1719,Tule White-fronted Goose,TWFG
+1720,Canada Goose,CAGO
+1721,Aleutian Cackling Goose,ACGO
+1722,Minima Cackling Goose,MCGO
+1723,Large Canada Goose,LCGO
+1724,Taverner's Cackling Goose,TCGO
+1725,Richardson's Cackling Goose,RCGO
+1726,Dusky Canada Goose,DCGO
+1729,Small Canada/Cackling Goose,SCGO
+1730,Atlantic Brant,ATBR
+1731,Black X Atlantic Brant Intergrade,BABI
+1740,Black Brant,BLBR
+1750,Barnacle Goose,BRNG
+1751,Hawaiian Goose,HAGO
+1760,Emperor Goose,EMGO
+1770,Black-bellied Whistling-Duck,BBWD
+1771,West Indian Whistling-Duck,WIWD
+1780,Fulvous Whistling-Duck,FUWD
+1782,Mute Swan,MUSW
+1790,Whooper Swan,WHOS
+1800,Whistling Swan,WHSW
+1801,Bewick's Swan,BESW
+1810,Trumpeter Swan,TRUS
+2060,Sandhill Crane,SACR
+2080,King Rail,KIRA
+2110,Clapper Rail,CLRA
+2111,California Ridgway's Rail,CRRA
+2112,Light-footed Ridgway's Rail,LFRR
+2113,Yuma Ridgway's Rail,YRRA
+2120,Virginia Rail,VIRA
+2131,Yellow-breasted Crake,YBCR
+2140,Sora,SORA
+2150,Yellow Rail,YERA
+2160,Black Rail,BLRA
+2161,Buff-banded Rail,BBRA
+2162,Guam Rail,GURA
+2163,Eastern Black Rail,EBRA
+2164,California Black Rail,CBRA
+2180,Purple Gallinule,PUGA
+2181,Purple Swamphen,PUSW
+2190,Common Gallinule,COGA
+2191,Hawaiian Gallinule,HAGA
+2192,Mariana Common Moorhen,MCMO
+2201,Hawaiian Coot,HACO
+2210,American Coot,AMCO
+2211,Caribbean Coot,CARC
+2280,American Woodcock,AMWO
+2300,Wilson's Snipe,WISN
+3120,Band-tailed Pigeon,BTPI
+3121,Plain Pigeon,PLPI
+3122,Puerto Rican Plain Pigeon,PRPP
+3130,Red-billed Pigeon,RBPI
+3140,White-crowned Pigeon,WCPI
+3141,Scaly-naped Pigeon,SNPI
+3151,Spotted Dove,SPDO
+3152,African Collared-Dove,AFCD
+3153,Zebra Dove,ZEBD
+3154,White-throated Ground Dove,WTGD
+3155,Mariana Fruit Dove,MAFD
+3158,Philippine Turtle-Dove,PHTD
+3159,Eurasian Collared-Dove,ECDO
+3160,Mourning Dove,MODO
+3161,Eared Dove,EADO
+3170,Zenaida Dove,ZEND
+3180,White-tipped Dove,WTDO
+3181,Caribbean Dove,CADO
+3190,White-winged Dove,WWDO
+3200,Common Ground Dove,COGD
+3201,Ruddy Ground Dove,RUGD
+3210,Inca Dove,INDO
+3220,Key West Quail-Dove,KWQD
+3221,Ruddy Quail-Dove,RUQD
+3222,Bridled Quail-Dove,BRQD
+4860,Common Raven,CORA
+4870,Chihuahuan Raven,CHRA
+4880,American Crow,AMCR
+4890,Northwestern Crow,NOCR
+4900,Fish Crow,FICR
