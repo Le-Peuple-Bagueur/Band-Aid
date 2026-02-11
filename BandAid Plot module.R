@@ -50,29 +50,6 @@ ensure_chromote_chrome <- function() {
 win_normpath <- function(p) normalizePath(p, winslash = "/", mustWork = FALSE)
 
 
-# ---- webshot/chrome helpers ----
-ensure_chromote_chrome <- function() {
-  # If already set and exists, keep it
-  cur <- Sys.getenv("CHROMOTE_CHROME", "")
-  if (nzchar(cur) && file.exists(cur)) return(cur)
-  
-  candidates <- c(
-    "C:/Program Files/Google/Chrome/Application/chrome.exe",
-    "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
-    "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
-    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
-  )
-  hit <- candidates[file.exists(candidates)]
-  if (length(hit)) {
-    Sys.setenv(CHROMOTE_CHROME = hit[[1]])
-    return(hit[[1]])
-  }
-  # Nothing found; let chromote try its own discovery
-  return(NULL)
-}
-
-win_normpath <- function(p) normalizePath(p, winslash = "/", mustWork = FALSE)
-
 
 # =========================================================
 # UI
@@ -87,6 +64,18 @@ mod_plot_ui <- function(id) {
 # =========================================================
 mod_plot_server <- function(id, final_data, active_tab, lang) {
   moduleServer(id, function(input, output, session) {
+    
+    observeEvent(input$download_map_jpeg, {
+      message("[Export] download_map_jpeg clicked at ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
+    }, ignoreInit = TRUE)
+    
+    # Minimal 1x1 JPEG writer (absolute last-resort fallback)
+    .write_placeholder_jpeg <- function(path) {
+      path <- normalizePath(path, winslash = "/", mustWork = FALSE)
+      grDevices::jpeg(filename = path, width = 2, height = 2, units = "px", quality = 90)
+      plot.new(); grDevices::dev.off()
+      invisible(TRUE)
+    }
     
     tr <- get_tr()
     `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
@@ -318,6 +307,7 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
       outputOptions(output, "species_order_ui", suspendWhenHidden = FALSE)
       outputOptions(output, "station_order_ui", suspendWhenHidden = FALSE)
       outputOptions(output, "map",              suspendWhenHidden = FALSE)
+      outputOptions(output, "download_map_jpeg", suspendWhenHidden = FALSE)
     }, once = TRUE)
     
     # -----------------------------------------------------
@@ -803,14 +793,22 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
       filename = function() paste0("BandAid_map_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".jpg"),
       contentType = "image/jpeg",
       content = function(file) {
-        req(active_tab() == "map")
+        # (A) don’t block on tab; we log if needed
+        if (!identical(active_tab(), "map")) {
+          message("[Export] Warning: active_tab() != 'map' (got: ", as.character(active_tab()), "). Continuing.")
+        }
         req(lang()); sync_i18n_lang(lang())
         
-        # 1) Ensure a Chrome/Edge binary is available for webshot2/chromote
-        ensure_chrome()  # finds/sets CHROMOTE_CHROME if needed  (see chromote::find_chrome docs)  # [3](https://rstudio.github.io/chromote/reference/find_chrome.html)
+        # (B) normalize output path
+        file_out <- win_normpath(file)
         
+        # (C) make sure Chrom(e/ium) is resolvable
+        ensure_chrome()
+        used <- try(chromote::find_chrome(), silent = TRUE)
+        message("[Export] Chrom(e/ium) used by webshot2: ", as.character(used))  # may show NULL if none found
+        
+        # (D) build the same data as on-screen
         df <- plot_data(); req(df)
-        
         sp <- species_labels()
         ids <- sp$ids
         sp_selected <- input$species_selected %||% ids
@@ -879,7 +877,7 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
           m <- m |> leaflet::setView(lng = input$map_center$lng, lat = input$map_center$lat, zoom = input$map_zoom)
         }
         
-        # 2) Compute export size and FORCE INTEGERS for webshot2 (Chrome requires ints)
+        # (E) viewport: integers + safety caps (Chrome requires ints; extreme sizes can fail)
         dim <- input$map_dim
         w0 <- if (!is.null(dim) && !is.null(dim$w)) as.numeric(dim$w) else 1400
         h0 <- if (!is.null(dim) && !is.null(dim$h)) as.numeric(dim$h) else 900
@@ -896,28 +894,56 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
         }
         vwidth  <- as.integer(round(vwidth))
         vheight <- as.integer(round(vheight))
-        if (vwidth < 100)  vwidth <- 100
-        if (vheight < 100) vheight <- 100
-        # (Chromote/webshot2 failures have been observed with non-integer vwidth/vheight)  # [4](https://github.com/rstudio/chromote/issues/183)
+        vwidth  <- max(100L, min(4096L, vwidth))
+        vheight <- max(100L, min(4096L, vheight))
         
-        # 3) Take the snapshot (slightly longer delay helps tiles finish)
+        # Optional Chromote stabilization (safe no-op if unnecessary)
+        try(chromote::set_chrome_args("--disable-crash-reporter"), silent = TRUE)
+        
+        # (G) try mapshot2 with increasing delays, then fallback to webshot2::webshot
+        delays <- c(2, 4, 6)  # seconds
+        err_last <- NULL
         ok <- FALSE
-        err_msg <- NULL
-        try({
-          mapview::mapshot2(
-            m,
-            file = file,
-            vwidth = vwidth,
-            vheight = vheight,
-            delay = 2.0,  # you can bump to 3 if tiles are heavy
-            remove_controls = c("zoomControl","layersControl","homeButton","scaleBar","easyButton","control")
-          )
-          ok <- TRUE
-        }, silent = TRUE)
+        for (d in delays) {
+          ok <- tryCatch({
+            mapview::mapshot2(
+              m,
+              file = file_out,
+              vwidth  = vwidth,
+              vheight = vheight,
+              delay   = d,
+              remove_controls = c("zoomControl","layersControl","homeButton","scaleBar","easyButton","control")
+            )
+            file.exists(file_out) && file.info(file_out)$size > 0
+          }, error = function(e) {
+            err_last <<- conditionMessage(e); FALSE
+          })
+          if (ok) break
+        }
         
-        if (!ok || !file.exists(file) || file.info(file)$size <= 0) {
-          showNotification(tr("Could not render the map image. Please try again or contact support."), type = "error", duration = 8)
-          stop("map export failed")
+        if (!ok) {
+          html_tmp <- tempfile(fileext = ".html")
+          htmlwidgets::saveWidget(m, html_tmp, selfcontained = TRUE)
+          try({
+            webshot2::webshot(
+              url     = html_tmp,
+              file    = file_out,
+              vwidth  = vwidth,
+              vheight = vheight,
+              delay   = 4
+            )
+          }, silent = TRUE)
+          ok <- file.exists(file_out) && file.info(file_out)$size > 0
+        }
+        
+        if (!ok) {
+          # Produce a tiny placeholder so the browser still offers a download
+          .write_placeholder_jpeg(file)
+          msg <- paste0("Map export failed; placeholder delivered. ",
+                        if (!is.null(err_last)) paste0("Last error: ", err_last))
+          showNotification(tr("Map export failed; a placeholder image was downloaded. Please try again."),
+                           type = "error", duration = 8)
+          warning(msg)
         }
       }
     )
