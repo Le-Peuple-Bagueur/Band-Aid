@@ -107,18 +107,18 @@ Part C — Publish the ZIP for users (Teams / SharePoint / OneDrive)
 
 Part D — User instructions (still no GitHub account)
 Users only see the SharePoint/Teams/OneDrive link you send.
-Step 6 — What users do
-
-Click your link and download the ZIP
-Unzip it:
-
-Windows: right‑click ZIP → Extract All…
-
-
-Open the extracted folder
-Double‑click run_app.bat (Windows)
-
-(or run_app.command on Mac, if you support Macs)
-
-
-The app opens in their browser and runs locally 
+  Step 6 — What users do
+  
+    Click your link and download the ZIP
+    Unzip it:
+    
+    Windows: right‑click ZIP → Extract All…
+    
+    
+    Open the extracted folder
+    Double‑click run_app.bat (Windows)
+    
+    (or run_app.command on Mac, if you support Macs)
+    
+    
+    The app opens in their browser and runs locally 
