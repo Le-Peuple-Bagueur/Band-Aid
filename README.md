@@ -10,51 +10,55 @@ INSTRUCTIONS TO MAINTAINER WHEN STARTING FROM SCRATCH
 
   
 
-Part A — Maintainer instructions (no Terminal, no Git)
-Step 1 — Create the GitHub repository (one-time)
-
-Go to GitHub.com (you can create a GitHub account for yourself as maintainer).
-Create a new repository (public or private).
-
-If you want users to download ZIP without any authentication, public is easiest.
-If your organization requires private code, you can still use private GitHub for you and distribute ZIP via SharePoint (users never see GitHub).
-
-
-
-Step 2 — Upload your app files to the repo (no Git)
-You can upload via the GitHub website:
-
-Open your repo page on GitHub
-Click Add file → Upload files
-Drag and drop the whole project contents:
-
-app.R
-your module files (BandAid upload module.R, etc.)
-translations/translation.json
-launcher files (run_app.R, run_app.bat, optional run_app.command)
+Part A — Maintainer instructions
+Step 1 — NO NEED AT THIS POINT: 
+    Create the GitHub repository (one-time)
+    
+    Go to GitHub.com (you can create a GitHub account for yourself as maintainer).
+    Create a new repository (public or private).
+    
+    If you want users to download ZIP without any authentication, public is easiest.
+    If your organization requires private code, you can still use private GitHub for you and distribute ZIP via SharePoint (users never see GitHub).
 
 
-Click Commit changes
-
-
-Tip: Make sure your repo contains the launcher files so you don’t have to “fix the ZIP” after downloading.
-
-Minimum repo content (recommended)
-app.R
-BandAid upload module.R
-BandAid filter module.R
-BandAid Table module.R
-BandAid Plot module.R
-translations/translation.json
-run_app.R
-run_app.bat
-(run_app.command optional)
+Step 2 — IN CASE YOU COMPLETELY NEED TO START OVER 
+    Upload your app files to the repo (no Git)
+    You can upload via the GitHub website:
+    
+    Open your repo page on GitHub
+    Click Add file → Upload files
+    Drag and drop the whole project contents:
+    
+    app.R
+    your module files (BandAid upload module.R, etc.)
+    translations/translation.json
+    launcher files (run_app.R, run_app.bat, optional run_app.command)
+    
+    
+    Click Commit changes
+    
+    
+    Tip: Make sure your repo contains the launcher files so you don’t have to “fix the ZIP” after downloading.
+    
+    Minimum repo content (recommended)
+    app.R
+    BandAid upload module.R
+    BandAid filter module.R
+    BandAid Table module.R
+    BandAid Plot module.R
+    translations/translation.json
+    run_app.R
+    run_app.bat
+    (run_app.command optional)
 
 Step 3 — When you update the app (your normal maintenance loop)
 Whenever you change code:
 
 Edit files locally and upload them again through GitHub (Add file → Upload files), OR
 Use GitHub’s in-browser editor (click a file → pencil icon → commit).
+OR YOU CAN USE THE GITHUB DESKTOP APP - YOU CAN INSTALL IT ON YOUR WORK COMPUTER WITHOUT PERMISSION
+
+BEFORE EDITING: you need to clone the repo locally on your computer, make the changes, do Commit to main, and pull origin. so everything is up to date.
 
 
 Part B — “Create the ZIP from GitHub” (this is your distribution build step)
