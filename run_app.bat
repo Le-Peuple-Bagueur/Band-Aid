@@ -1,6 +1,14 @@
 @echo off
 setlocal
 
+REM --------------------------------------------
+REM Relaunch this batch minimized on first run
+REM --------------------------------------------
+if /i not "%~1"=="min" (
+  start "" /min cmd /c "%~f0" min
+  exit /b
+)
+
 REM Go to folder where this BAT file lives
 cd /d "%~dp0"
 
