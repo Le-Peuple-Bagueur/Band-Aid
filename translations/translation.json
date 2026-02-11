@@ -41,6 +41,8 @@
     { "en": "Value", "fr": "Valeur" },
     { "en": "Value (limited list; type to search)", "fr": "Valeur (liste limitée; tapez pour rechercher)" },
     { "en": "Type to search…", "fr": "Tapez pour rechercher…" },
+    { "en": "Max column width (px)", "fr": "Largeur maximale des colonnes (px)" },
+    { "en": "Max values shown in lists", "fr": "nombre maximum de valeurs dans les listes" },
 
     { "en": "Active filters: ", "fr": "Filtres actifs : " },
 
