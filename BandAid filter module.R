@@ -271,14 +271,15 @@ mod_filters_server <- function(id, data_source, lang) {
       req(current_lang)
       sync_i18n_lang(current_lang)
       
-      req(result())
+      req(compute_result())
       tags$div(
         tags$strong(tr("Active filters: ")),
-        tags$code(result()$filter_summary)
+        tags$code(compute_result()$filter_summary)
       )
     })
     
-    observeEvent(input$apply, {
+    # Compute the filtered result ONLY when Apply is clicked (allows re-apply)
+    compute_result <- eventReactive(input$apply, {
       current_lang <- lang()
       req(current_lang)
       sync_i18n_lang(current_lang)
@@ -295,7 +296,7 @@ mod_filters_server <- function(id, data_source, lang) {
       
       for (i in seq_len(input$n_filters)) {
         col <- input[[paste0("col_", i)]]
-        op  <- input[[paste0("op_", i)]]
+        op  <- input[[paste0("op_",  i)]]
         val <- input[[paste0("val_", i)]]
         req(col, op, val)
         
@@ -306,6 +307,8 @@ mod_filters_server <- function(id, data_source, lang) {
           if (op == "between") glue::glue("{col_sql} BETWEEN {val[1]} AND {val[2]}")
           else glue::glue("{col_sql} {op} {val}")
         } else {
+          # guard: forbid empty IN () which causes SQL error if user clears selection
+          validate(need(length(val) > 0, tr("Choose at least one value.")))
           vals_sql <- paste(vapply(val, function(x) sql_lit(con, x), character(1)), collapse = ", ")
           if (op == "in") glue::glue("{col_sql} IN ({vals_sql})")
           else glue::glue("{col_sql} NOT IN ({vals_sql})")
@@ -325,20 +328,19 @@ mod_filters_server <- function(id, data_source, lang) {
       }
       
       preview <- DBI::dbGetQuery(con, glue::glue("SELECT * FROM {tbl} WHERE {where_sql} LIMIT {PREVIEW_LIMIT};"))
-      result(list(where_sql = where_sql, filter_summary = summary_txt, preview = preview))
       
+      # Close the details panel (same behavior as before)
       session$sendCustomMessage("closeFilters", TRUE)
-    })
+      
+      list(where_sql = where_sql, filter_summary = summary_txt, preview = preview)
+    }, ignoreInit = TRUE)
     
     output$download_csv <- downloadHandler(
       filename = function() paste0("filtered_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv"),
       content = function(file) {
         ds <- data_source(); req(ds)
-        res <- result(); req(res)
-        
-        out <- normalizePath(file, winslash = "/", mustWork = FALSE)
-        out <- gsub("'", "''", out)
-        
+        res <- compute_result(); req(res)
+        ...
         DBI::dbExecute(ds$con, glue::glue("
           COPY (SELECT * FROM {ds$table} WHERE {res$where_sql})
           TO '{out}' (HEADER, DELIMITER ',');
@@ -349,7 +351,7 @@ mod_filters_server <- function(id, data_source, lang) {
     output$download_xlsx <- downloadHandler(
       filename = function() paste0("filtered_preview_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx"),
       content = function(file) {
-        res <- result(); req(res)
+        res <- compute_result(); req(res)
         wb <- openxlsx::createWorkbook()
         openxlsx::addWorksheet(wb, "Preview")
         openxlsx::writeDataTable(wb, "Preview", res$preview)
@@ -358,7 +360,7 @@ mod_filters_server <- function(id, data_source, lang) {
     )
     
     observe({
-      enabled <- !is.null(result())
+      enabled <- !is.null(compute_result())
       shinyjs::toggleState(session$ns("download_csv"), enabled)
       shinyjs::toggleState(session$ns("download_xlsx"), enabled)
     })
@@ -369,8 +371,8 @@ mod_filters_server <- function(id, data_source, lang) {
     })
     
     reactive({
-      req(result())
-      result()$preview
+      req(compute_result())
+      compute_result()$preview
     })
   })
 }
