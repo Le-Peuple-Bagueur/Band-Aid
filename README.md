@@ -102,18 +102,10 @@ Part B — “Create the ZIP from GitHub” (this is your distribution build ste
   Step 4 — Download the latest repo as a ZIP (no Git required)
   
     Go to your repo page on GitHub
-    Click the green Code button
-    Click Download ZIP [datanovia.com]
-    Your browser downloads a ZIP snapshot of the repository files [datanovia.com]
-    
-    That ZIP is your “build artifact” (your distributable package).
-    Optional but recommended: rename the ZIP for versions
-    Before uploading it for users, rename it like:
-    
-    BandAid_v1.0.zip
-    BandAid_v1.1_2026-01-29.zip
-    
-    This makes it much easier to support users (“Which version do you have?”).
+    click on Releases, on the right of the file list.
+    choose the Source Code file, it will download de latest version.
+    Your browser downloads a ZIP folder in your download folder.
+
 
 Part C — Publish the ZIP for users (Teams / SharePoint / OneDrive)
   Step 5 — Upload the ZIP to Teams / SharePoint / OneDrive
