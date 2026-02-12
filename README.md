@@ -63,8 +63,9 @@ Part A — Maintainer instructions
     
     BEFORE EDITING: you need to clone the repo locally on your computer, make the changes, do Commit to main, and pull origin. so everything is up to date.
 
-Step 3.1 create version number before releasing
-    To assign version numbers to your application modifications within GitHub, the standard practice involves creating and utilizing Git tags with a semantic versioning (SemVer) format [1]. You can then manage and release these versions on the GitHub platform. 
+
+  Step 3.1 create version number before releasing
+    To assign version numbers to your application modifications within GitHub, the standard practice involves creating and utilizing Git tags with a semantic versioning (SemVer) format [1]. You         can then manage and release these versions on the GitHub platform. 
     Here methods to do this:
     1. Tag a Specific Commit in Git 
     Git tags are essentially pointers to specific commits, similar to branches, but they are static and do not move. They are ideal for marking release points (v1.0.0, v1.0.1, etc.). 
@@ -84,7 +85,7 @@ Step 3.1 create version number before releasing
     Right-click on the desired commit.
     Select Create Tag... and enter your version number (e.g., v1.0.0). 
     2. Create a GitHub Release
-    Once a tag is pushed to GitHub, you can formalize it into a GitHub Release, which allows you to add release notes, attach binary files (like compiled app bundles or executables), and provide a clear, public changelog [1]. 
+    Once a tag is pushed to GitHub, you can formalize it into a GitHub Release, which allows you to add release notes, attach binary files (like compiled app bundles or executables), and provide a      clear, public changelog [1]. 
     On the GitHub Website:
     Navigate to your repository on github.com.
     Click on the Releases tab (usually found in the right sidebar or under the code tab near the file list).
