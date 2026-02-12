@@ -793,14 +793,29 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
       filename = function() paste0("BandAid_map_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".jpg"),
       contentType = "image/jpeg",
       content = function(file) {
-        # (A) don’t block on tab; we log if needed
+        
+        
+        # Always ensure *something* gets written so Edge gets bytes
+        ok_flag <- FALSE
+        on.exit({
+          if (!ok_flag) {
+            .write_placeholder_jpeg(file)
+            warning("[Export] Map export failed early; placeholder delivered.")
+          }
+        }, add = TRUE)
+        
         if (!identical(active_tab(), "map")) {
           message("[Export] Warning: active_tab() != 'map' (got: ", as.character(active_tab()), "). Continuing.")
         }
+        
+        
         req(lang()); sync_i18n_lang(lang())
         
+        
+        
+        
         # (B) normalize output path
-        file_out <- win_normpath(file)
+        #file_out <- win_normpath(file)
         
         # (C) make sure Chrom(e/ium) is resolvable
         ensure_chrome()
@@ -908,13 +923,13 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
           ok <- tryCatch({
             mapview::mapshot2(
               m,
-              file = file_out,
+              file = file,
               vwidth  = vwidth,
               vheight = vheight,
               delay   = d,
               remove_controls = c("zoomControl","layersControl","homeButton","scaleBar","easyButton","control")
             )
-            file.exists(file_out) && file.info(file_out)$size > 0
+            file.exists(file) && file.info(file)$size > 0
           }, error = function(e) {
             err_last <<- conditionMessage(e); FALSE
           })
@@ -927,13 +942,13 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
           try({
             webshot2::webshot(
               url     = html_tmp,
-              file    = file_out,
+              file    = file,
               vwidth  = vwidth,
               vheight = vheight,
               delay   = 4
             )
           }, silent = TRUE)
-          ok <- file.exists(file_out) && file.info(file_out)$size > 0
+          ok <- file.exists(file) && file.info(file)$size > 0
         }
         
         if (!ok) {
@@ -944,6 +959,9 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
           showNotification(tr("Map export failed; a placeholder image was downloaded. Please try again."),
                            type = "error", duration = 8)
           warning(msg)
+        }
+        if (ok) {
+          ok_flag <- TRUE  # disable on.exit placeholder
         }
       }
     )
