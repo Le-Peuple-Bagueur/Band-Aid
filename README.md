@@ -63,6 +63,38 @@ Part A — Maintainer instructions
     
     BEFORE EDITING: you need to clone the repo locally on your computer, make the changes, do Commit to main, and pull origin. so everything is up to date.
 
+Step 3.1 create version number before releasing
+    To assign version numbers to your application modifications within GitHub, the standard practice involves creating and utilizing Git tags with a semantic versioning (SemVer) format [1]. You can then manage and release these versions on the GitHub platform. 
+    Here methods to do this:
+    1. Tag a Specific Commit in Git 
+    Git tags are essentially pointers to specific commits, similar to branches, but they are static and do not move. They are ideal for marking release points (v1.0.0, v1.0.1, etc.). 
+    Using the Command Line (CLI):
+    Navigate to your local repository directory.
+    Ensure you are on the correct branch and have the desired changes committed.
+    Create an annotated tag (which includes a message and information about the committer, best practice for releases) [1]:
+    bash
+    git tag -a v1.0.0 -m "Release version 1.0.0"
+    Push the tag to your remote repository on GitHub:
+    bash
+    git push origin v1.0.0
+    (Note: You might need to use git push origin --tags to push all new local tags to the remote at once.) [1] 
+    Using the GitHub Desktop Application:
+    In the GitHub Desktop interface, ensure you are on the commit you wish to tag.
+    Go to the History tab.
+    Right-click on the desired commit.
+    Select Create Tag... and enter your version number (e.g., v1.0.0). 
+    2. Create a GitHub Release
+    Once a tag is pushed to GitHub, you can formalize it into a GitHub Release, which allows you to add release notes, attach binary files (like compiled app bundles or executables), and provide a clear, public changelog [1]. 
+    On the GitHub Website:
+    Navigate to your repository on github.com.
+    Click on the Releases tab (usually found in the right sidebar or under the code tab near the file list).
+    Click Draft a new release.
+    In the "Choose a tag" dropdown, select the tag you just pushed (e.g., v1.0.0).
+    Enter a descriptive title and write the release notes (e.g., summary of new features, bug fixes). VERSION NUMBERS CORRESPOND TO THE RELEASE DATE FOR NOW
+    (Optional) Attach any application files (APKs, EXEs, etc.) in the "Attach binaries by dropping them here or selecting them" box.
+    Click Publish release [1]. 
+    
+
 
 Part B — “Create the ZIP from GitHub” (this is your distribution build step)
 
