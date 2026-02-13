@@ -3,9 +3,14 @@
   "languages": ["en", "fr"],
   "translation": [
     { "en": "Band-Aid", "fr": "Band-Aid" },
+    { "en": "Created by François Bolduc, Canadian Wildlife Service, Quebec Region", "fr": "Créé par François Bolduc, Service canadien de la faune, Région du Québec" },
 
     { "en": "Upload & Filters", "fr": "Téléversement et filtres" },
     { "en": "Font size", "fr": "Taille de police" },
+    { "en": "Help (Instructions / Version history)", "fr": "Aide (Instructions / historique des versions" },
+    { "en": "Instructions", "fr": "Instructions" },
+    { "en": "Version history", "fr": "Historique des versions" },
+
 
     { "en": "Table", "fr": "Tableau" },
     { "en": "Encounter Map", "fr": "Carte des retours de bagues" },
@@ -46,9 +51,10 @@
 
     { "en": "Active filters: ", "fr": "Filtres actifs : " },
 
-    { "en": "Add Species and Station Names", "fr": "Ajouter les noms d’espèces et de stations" },
+    { "en": "Add Station Names", "fr": "Ajouter les noms de stations" },
     { "en": "Species", "fr": "Espèces" },
     { "en": "Stations", "fr": "Stations" },
+    { "en": "The merge runs automatically whenever the station file or the selections change.", "fr": "La fusion se fait automatiquement lorsque le fichier station ou la sélection des champs est modifiée." },
 
     { "en": "Merge with species file", "fr": "Fusionner avec un fichier d’espèces" },
     { "en": "Upload species file (CSV or Excel)", "fr": "Téléverser le fichier d’espèces (CSV ou Excel)" },

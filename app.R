@@ -12,7 +12,9 @@ required_pkgs <- c(
   # Plot export (used in Plot module for mapshot2)
   "mapview", "webshot2",
   # Optional but used in get_app_dir (only if in RStudio)
-  "rstudioapi"
+  "rstudioapi",
+  # For includeMarkdown() + markdownToHTML fallback
+  "markdown"
 )
 
 ensure_packages <- function(pkgs, repos = "https://cloud.r-project.org") {
@@ -58,6 +60,9 @@ library(DBI)
 library(duckdb)
 library(glue)
 
+# Fallback markdown conversion (only used if files are missing)
+library(markdown)
+
 options(shiny.maxRequestSize = 1500 * 1024^2)
 options(shiny.launch.browser = TRUE)
 
@@ -101,6 +106,130 @@ source(file.path(app_dir, "BandAid filter module.R"), local = FALSE)
 source(file.path(app_dir, "BandAid Table module.R"),  local = FALSE)
 source(file.path(app_dir, "BandAid Plot module.R"),   local = FALSE)
 
+# --- Embedded English fallbacks (used if Markdown files are missing) ---
+embedded_instructions_en <- "
+# Band-Aid App - User Guide
+
+Welcome to Band-Aid! This guide explains how to use each feature of the app.
+
+## Table of Contents
+1. [Upload Your Data](#upload-your-data)
+2. [Apply Filters](#apply-filters)
+3. [View Your Data in a Table](#view-your-data-in-a-table)
+4. [Create a Map](#create-a-map)
+
+---
+
+## Upload Your Data
+
+The **Upload** section is your starting point. This is where you load your GameBird data into the app.
+
+### How to Upload:
+1. Click the **Upload** tab when the app starts
+2. Click **Browse** or **Choose File**
+3. Select your GameBird CSV file from your computer
+4. The app automatically reads your file and prepares it for analysis.
+
+### Automatic Lookup Merging:
+- The app will automatically merge any lookup files in the **Look Ups** folder
+- These might include reference tables for species codes, age, or other reference data
+- You don't need to do anything—this happens automatically!
+- **The main file upload + lookup table merge take ~15 minutes**. If you always use the same subset (e.g., regional data for one permit), **after the first upload, create that subset and download it**, then upload only that subset for faster operations.
+- Once uploaded, your data will be processed and the Filters will become available
+
+## Apply Filters
+The **Filters** section lets you refine your data by selecting specific records.
+
+### Available Filters:
+The app will automatically create filters based on the columns in your data. Common filters include:
+- **Date range**
+- **Species**
+- **Numeric columns** (min/max)
+- **Text columns** (search or select)
+
+### How to Use Filters:
+1. Click the **Filters** tab
+2. Use the per-column controls
+3. Dropdowns: expand and select values
+4. Numeric: enter min/max or use sliders
+5. Dates: pick a range
+6. Click **Apply**
+7. The table updates with matching records
+
+### Filter Tips:
+- Multiple filters are combined (AND)
+- Matching record count shows at the bottom
+- Clear any filter to reset
+
+---
+
+## View Your Data in a Table
+The **Table** section displays your filtered data.
+
+### Features:
+- Horizontal scroll to see all columns
+- Sort by clicking column headers
+- Search box to find records
+
+### Merge with a Station File (optional)
+1. Expand **Add Station Names**
+2. Upload a CSV/Excel with station info
+3. After choosing latitude/longitude fields, the merge runs automatically
+4. The table gets enriched
+
+### Download Your Data
+- Use the **Download** buttons under the table (CSV/XLSX)
+
+### Table Navigation
+- Pagination controls
+- Rows per page
+- Export buttons at top-right
+
+---
+
+## Create a Map
+The **Map** section visualizes your observations geographically.
+
+### What You'll See:
+- **Encounter markers**
+- **Station markers** (larger black symbols)
+- A legend
+
+### Species Selector
+- Use the checkbox menu
+
+### Station Selector
+- Use the checkbox menu
+- **No Station** shows observations without station assignment
+
+### Interactions
+- Zoom (wheel/pinch)
+- Pan (drag)
+
+### Station Marker Mode
+- **Centroid mode**
+- **Most recent**
+
+### Export Your Map
+- Click **Download Map** (JPEG/PNG)
+"
+
+embedded_version_en <- "
+## VERSION HISTORY
+
+V260212 – first version.
+
+V260213 – modifications:
+- corrected bug preventing to download a map;
+- limit field list default value now 4000;
+- variable Corr.Year created;
+- Lookup table merge skipped if fields already in uploaded subset;
+- merge species field before filtering, at the same time as the lookup tables;
+- station merge now run as soon as the lat - lon fields are selected;
+- removed download buttons under the filters as already existing under the data table view;
+- added version history and instruction to users, available via a window by the filter fields.
+"
+
 ui <- fluidPage(
   theme = bs_theme(bootswatch = "flatly"),
   shiny.i18n::usei18n(i18n),
@@ -137,7 +266,7 @@ ui <- fluidPage(
       .app-header { text-align: center; margin: 10px 0 18px 0; }
       h1.app-title {
         font-size: clamp(51px, 6.75vw, 90px) !important;
-        font-weight: 900;
+        font-weight: 800;
         line-height: 0.95;
         margin: 0;
         letter-spacing: 0.5px;
@@ -156,7 +285,7 @@ ui <- fluidPage(
       .lang-toggle .radio label {
         margin: 0; padding: 8px 16px;
         background: #fff; color: #212529;
-        font-weight: 700; cursor: pointer; user-select: none;
+        font-weight: 600; cursor: pointer; user-select: none;
         border-right: 1px solid #ced4da;
       }
       .lang-toggle .radio:last-child label { border-right: none; }
@@ -233,7 +362,7 @@ ui <- fluidPage(
         position: fixed;
         inset: 0;
         background: rgba(255,255,255,0.85);
-        display: none;                  /* toggled via JS or shinyjs */
+        display: none;
         align-items: center;
         justify-content: center;
         z-index: 9999;
@@ -242,7 +371,7 @@ ui <- fluidPage(
       .loading-box {
         text-align: center;
         color: #0d6efd;
-        font-weight: 700;
+        font-weight: 600;
       }
       .loading-box img {
         width: 140px;
@@ -261,6 +390,61 @@ ui <- fluidPage(
         50%  { transform: translateY(-6px); }
         100% { transform: translateY(0); }
       }
+
+      /* ======================
+         Right-side Help panel
+         ====================== */
+      .help-details summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: #0d6efd;
+        outline: none;
+        list-style: none;
+      }
+      .help-details summary::-webkit-details-marker { display: none; }
+      .help-details summary:before {
+        content: '›';
+        display: inline-block;
+        margin-right: 6px;
+        transition: transform 0.15s ease;
+      }
+      .help-details[open] summary:before { transform: rotate(90deg); }
+
+      .help-panel {
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 10px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 6px;
+        font-size: calc(var(--app-font-size) * 1.0);
+      }
+      .help-content {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        max-height: 460px;
+        padding-right: 4px;
+      }
+      .help-toggle .shiny-options-group {
+        display: inline-flex;
+        border: 1px solid #ced4da;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .help-toggle .radio { margin: 0; position: relative; }
+      .help-toggle .radio input[type='radio'] { position: absolute; opacity: 0; pointer-events: none; }
+      .help-toggle .radio label {
+        margin: 0; padding: 6px 12px;
+        background: #fff; color: #212529;
+        font-weight: 600; cursor: pointer; user-select: none;
+        border-right: 1px solid #ced4da;
+        font-size: var(--app-font-size);
+      }
+      .help-toggle .radio:last-child label { border-right: none; }
+      .help-toggle .radio label.help-active { background: #0d6efd; color: #fff; }
     ")),
     
     # Existing handlers
@@ -305,10 +489,7 @@ ui <- fluidPage(
           var elapsedEl = document.getElementById('loading-elapsed');
 
           if (isLoading) {
-            // show overlay
             overlay.style.display = 'flex';
-
-            // start client timer (keeps ticking even when server is busy)
             var startTs = Date.now();
             overlay.dataset.startTs = startTs;
 
@@ -320,7 +501,6 @@ ui <- fluidPage(
               }, 200);
             }
           } else {
-            // hide overlay and stop timer
             overlay.style.display = 'none';
             if (loaderTimerId) { clearInterval(loaderTimerId); loaderTimerId = null; }
             if (elapsedEl) elapsedEl.textContent = '';
@@ -336,16 +516,14 @@ ui <- fluidPage(
       });
     ")),
     
-    # Force-hide overlay on initial load (prevents any flash before first upload)
+    # Force-hide overlay on initial load
     tags$script(HTML("
       (function() {
         function hideLoader() {
           var el = document.getElementById('loading-overlay');
           if (el) el.style.display = 'none';
         }
-        // On initial DOM ready
         document.addEventListener('DOMContentLoaded', hideLoader);
-        // When Shiny connects
         if (window.jQuery) {
           jQuery(document).on('shiny:connected', hideLoader);
         } else if (window.$) {
@@ -372,7 +550,52 @@ ui <- fluidPage(
       document.addEventListener('DOMContentLoaded', function() {
         setTimeout(syncLangToggleActive, 400);
       });
-    "))
+    ")),
+    
+    # Sync help segmented control
+    tags$script(HTML("
+      function syncHelpToggleActive() {
+        var container = document.getElementById('help_mode_container');
+        if (!container) return;
+        var labels = container.querySelectorAll('.radio label');
+        labels.forEach(function(l) { l.classList.remove('help-active'); });
+        var checked = container.querySelector('input[type=radio]:checked');
+        if (checked && checked.parentElement && checked.parentElement.tagName.toLowerCase() === 'label') {
+          checked.parentElement.classList.add('help-active');
+        }
+      }
+      document.addEventListener('change', function(e) {
+        if (e && e.target && e.target.name === 'help_mode') syncHelpToggleActive();
+      });
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(syncHelpToggleActive, 400);
+      });
+    ")),
+    tags$script(HTML("
+  document.addEventListener('DOMContentLoaded', function() {
+    const helpDetails = document.querySelector('.help-details');
+    if (helpDetails) {
+      helpDetails.open = false;   // force closed on initial load
+    }
+  });
+
+  // Also ensure Shiny re-rendering doesn't open it
+  document.addEventListener('shiny:idle', function() {
+    const helpDetails = document.querySelector('.help-details');
+    if (helpDetails && helpDetails.dataset.userToggled !== 'true') {
+      helpDetails.open = false;
+    }
+  });
+
+  // Track if user manually opens/closes it
+  document.addEventListener('click', function(e) {
+    let d = e.target.closest('.help-details');
+    if (d) {
+      // prevent Shiny from auto-overriding manual toggle
+      d.dataset.userToggled = 'true';
+    }
+  });
+"))
   ),
   
   useShinyjs(),
@@ -397,6 +620,15 @@ ui <- fluidPage(
     div(
       class = "app-header",
       tags$h1(class = "app-title", "BAND-AID"),
+      
+      
+      div(
+        style = "font-size: 1.1rem; font-weight: 600; margin-top: 4px; color: #0d6efd;",
+        textOutput("app_credit", inline = TRUE)
+      ),
+      
+      
+      
       div(
         class = "app-lang",
         div(
@@ -412,13 +644,14 @@ ui <- fluidPage(
       )
     ),
     
-    # Upload/filters
+    # Upload/filters + collapsible Help panel
     tags$details(
       class = "filters-panel",
       open = FALSE,
       tags$summary(uiOutput("upload_filters_summary")),
       br(),
       fluidRow(
+        # Left: Upload + display controls
         column(
           4,
           mod_upload_ui("upload"),
@@ -430,7 +663,22 @@ ui <- fluidPage(
           
           checkboxInput("dt_wrap", tr("Wrap cell text"), value = FALSE)
         ),
-        column(8, mod_filters_ui("filters"))
+        # Middle: Filters
+        column(5, mod_filters_ui("filters")),
+        # Right: Collapsible Help panel (NEW)
+        column(
+          3,
+          tags$details(
+            class = "help-details",
+            open = FALSE,  # collapsed by default
+            tags$summary(textOutput("help_summary_label")),
+            div(
+              class = "help-panel",
+              uiOutput("help_selector"),
+              div(class = "help-content", uiOutput("help_panel"))
+            )
+          )
+        )
       )
     ),
     
@@ -457,6 +705,12 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
+  output$app_credit <- renderText({
+    req(input$lang)
+    i18n$set_translation_language(input$lang)
+    tr("Created by François Bolduc, Canadian Wildlife Service, Quebec Region")
+  })
+  
   session$sendCustomMessage("setCompact", TRUE)
   
   observeEvent(input$lang, {
@@ -474,6 +728,56 @@ server <- function(input, output, session) {
     i18n$set_translation_language(input$lang)
     tags$strong(tr("Upload & Filters"))
   })
+  
+  # Collapsible help summary text (reactive to language)
+  output$help_summary_label <- renderText({
+    req(input$lang)
+    i18n$set_translation_language(input$lang)
+    # Keep it short; this is the clickable summary text
+    paste0("ℹ️ ", tr("Help (Instructions / Version history)"))
+  })
+  
+  # --- Help selector (reactive to language) ---
+  output$help_selector <- renderUI({
+    req(input$lang)
+    i18n$set_translation_language(input$lang)
+    
+    labels <- c(tr("Instructions"), tr("Version history"))
+    values <- c("instructions", "version")
+    
+    div(
+      id = "help_mode_container",
+      class = "help-toggle",
+      radioButtons(
+        inputId = "help_mode",
+        label = NULL,
+        choices = setNames(values, labels),
+        selected = "instructions",
+        inline = TRUE
+      )
+    )
+  })
+  
+  # --- Help content with file-based + fallback logic ---
+  output$help_panel <- renderUI({
+    req(input$lang)
+    mode <- if (is.null(input$help_mode)) "instructions" else input$help_mode
+    lang <- input$lang
+    
+    # ./help/<mode>_<lang>.md ; fallback to en; else fallback to embedded English
+    md_lang <- file.path(app_dir, "help", sprintf("%s_%s.md", mode, lang))
+    md_en   <- file.path(app_dir, "help", sprintf("%s_en.md", mode))
+    
+    if (file.exists(md_lang)) {
+      includeMarkdown(md_lang)
+    } else if (lang != "en" && file.exists(md_en)) {
+      includeMarkdown(md_en)
+    } else {
+      md_text <- if (identical(mode, "instructions")) embedded_instructions_en else embedded_version_en
+      HTML(markdown::markdownToHTML(text = md_text, fragment.only = TRUE))
+    }
+  })
+  outputOptions(output, "help_panel", suspendWhenHidden = FALSE)
   
   # Modules
   data_source <- mod_upload_server("upload", lang = reactive(input$lang))
