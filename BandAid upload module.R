@@ -40,6 +40,36 @@ get_app_dir_fallback <- function() {
   normalizePath(getwd(), winslash = "/", mustWork = TRUE)
 }
 
+# Canonicalize a column name: lower + remove separators (spaces, dots, underscores, etc.)
+.canon_name <- function(x) {
+  x <- trimws(x)
+  x <- sub("^\ufeff", "", x)        # strip BOM if present
+  tolower(gsub("[^a-z0-9]+", "", x))
+}
+
+# Case/spacing-insensitive "any like this name?"
+.has_col_like <- function(cols, target) {
+  if (!length(cols)) return(FALSE)
+  cn <- vapply(cols, .canon_name, character(1))
+  .canon_name(target) %in% cn
+}
+
+# Tolerant resolver: find the actual column name in `cols` that matches the target label
+.find_like <- function(cols, target) {
+  key <- .canon_name(target)
+  canon <- vapply(cols, .canon_name, character(1))
+  hit <- cols[canon == key]
+  if (length(hit)) return(hit[[1]])
+  variants <- unique(c(target, gsub("\\.", " ", target), gsub("\\.", "_", target), gsub("\\.", "", target)))
+  for (v in variants) {
+    key2 <- .canon_name(v)
+    hit2 <- cols[canon == key2]
+    if (length(hit2)) return(hit2[[1]])
+  }
+  NA_character_
+}
+
+
 # ---- Single-pass lookup join (fast) ----
 apply_lookup_joins_to_uploaded <- function(con, lookups_dir, tr = function(x) x) {
   
@@ -417,13 +447,212 @@ mod_upload_server <- function(id, lang) {
       app_dir <- get_app_dir_fallback()
       lookups_dir <- file.path(app_dir, "Look Ups")
       
-      apply_lookup_joins_to_uploaded(con, lookups_dir, tr = tr)
+      # 1) Read current columns and decide whether to skip Look-Ups
+      cols_df <- DBI::dbGetQuery(con, "PRAGMA table_info('uploaded');")
+      validate(need(nrow(cols_df) > 0, tr("Uploaded table has no columns")))
+      all_cols <- cols_df$name
       
+      # A marker we will add once merges were applied (survives into your filtered exports)
+      marker_present <- .has_col_like(all_cols, "_lookups_applied")
+      
+      # A few "sentinel" columns you know come from the Look-Ups merge.
+      # >>>> EDIT THIS LIST to match 3–5 columns that only appear AFTER merge:
+      lookup_sentinels <- c(
+        "Age Code Description",                 
+        "Sex Code Description",   
+        "Permittee"                   
+      )
+      
+      sentinel_hits <- vapply(lookup_sentinels, function(s) .has_col_like(all_cols, s), logical(1))
+      already_merged <- marker_present || sum(sentinel_hits) >= 2  # require at least 2 matches to be safe
+      
+      if (!already_merged) {
+        message("[Upload] Applying Look-Ups merge...")
+        apply_lookup_joins_to_uploaded(con, lookups_dir, tr = tr)
+        
+        # Refresh column list and add a marker so future re-uploads can be auto-detected
+        DBI::dbExecute(con, 'ALTER TABLE uploaded ADD COLUMN IF NOT EXISTS "_lookups_applied" BOOLEAN;')
+        DBI::dbExecute(con, 'UPDATE uploaded SET "_lookups_applied" = TRUE;')
+        
+      } else {
+        message("[Upload] Skipping Look-Ups: looks like columns already merged in this file.")
+      }
+      
+      # ---- Auto-merge SpeciesForMaps... like a Look-Up ----
+      # 1) find the species file in "Look Ups" (accepts "SpeciesForMaps..." or "Species ForMaps...", any extension)
+      sp_candidates <- list.files(lookups_dir, full.names = TRUE, ignore.case = TRUE)
+      sp_candidates <- sp_candidates[grepl("^(?i)species\\s*for\\s*maps", basename(sp_candidates), perl = TRUE)]
+      if (length(sp_candidates)) {
+        # Prefer the most recent
+        fi <- file.info(sp_candidates)
+        sp_path <- sp_candidates[order(fi$mtime, decreasing = TRUE)][1]
+        
+        # Check whether species is already merged (marker or many species columns already present)
+        cols_df <- DBI::dbGetQuery(con, "PRAGMA table_info('uploaded');")
+        all_cols <- cols_df$name
+        species_already <- .has_col_like(all_cols, "_species_merged")
+        
+        # Load species file header to decide skip via overlap (only if marker not present)
+        if (!species_already) {
+          ext <- tolower(tools::file_ext(sp_path))
+          if (ext %in% c("csv", "txt")) {
+            sp_df <- tryCatch(readr::read_csv(sp_path, show_col_types = FALSE, n_max = 10),
+                              error = function(e) NULL)
+          } else if (ext %in% c("xlsx", "xls")) {
+            sp_df <- tryCatch(readxl::read_excel(sp_path, n_max = 10),
+                              error = function(e) NULL)
+          } else {
+            sp_df <- NULL
+          }
+          if (!is.null(sp_df)) {
+            sp_cols <- names(sp_df)
+            # If >= 2 non-key species columns already exist in uploaded, assume merged
+            sp_bbl_col <- .find_like(sp_cols, "BBL_Number")
+            sp_nonkey  <- setdiff(sp_cols, sp_bbl_col)
+            overlap    <- intersect(.canon_name(all_cols), .canon_name(sp_nonkey))
+            species_already <- length(overlap) >= 2
+          }
+        }
+        
+        if (species_already) {
+          message("[Upload] Skipping Species merge: looks already present.")
+        } else {
+          message("[Upload] Applying Species merge from: ", basename(sp_path))
+          
+          # 2) Load the full species file into DuckDB
+          ext <- tolower(tools::file_ext(sp_path))
+          if (ext %in% c("csv", "txt")) {
+            sp_df <- readr::read_csv(sp_path, show_col_types = FALSE)
+          } else if (ext %in% c("xlsx", "xls")) {
+            sp_df <- readxl::read_excel(sp_path)
+          } else {
+            sp_df <- NULL
+          }
+          if (is.null(sp_df) || !nrow(sp_df)) {
+            warning("[Upload] Species file found but could not be read: ", sp_path)
+          } else {
+            # Write to DuckDB
+            DBI::dbWriteTable(con, "species_lu", sp_df, overwrite = TRUE)
+            
+            # 3) Resolve join keys
+            spcols <- names(sp_df)
+            ucols  <- DBI::dbGetQuery(con, "PRAGMA table_info('uploaded');")$name
+            
+            spnum_col <- .find_like(ucols, "Sp.Num")     # will accept Sp..Num., Sp Num, etc.
+            bbl_col   <- .find_like(spcols, "BBL_Number")
+            if (is.na(spnum_col) || is.na(bbl_col)) {
+              warning("[Upload] Species merge skipped: could not resolve join keys (Sp.Num / BBL_Number).")
+            } else {
+              spnum_id <- as.character(DBI::dbQuoteIdentifier(con, spnum_col))
+              bbl_id   <- as.character(DBI::dbQuoteIdentifier(con, bbl_col))
+              
+              # 4) Build the projection to avoid duplicate column names
+              #    - keep u.* (all uploaded columns)
+              #    - add species columns except the key; if a name already exists in uploaded, prefix as "sp.".
+              sp_cols_db <- DBI::dbGetQuery(con, "PRAGMA table_info('species_lu');")$name
+              sp_cols_keep <- setdiff(sp_cols_db, bbl_col)
+              
+              # Which species cols collide with uploaded names?
+              collide <- .canon_name(sp_cols_keep) %in% .canon_name(ucols)
+              sel_sp  <- character(0)
+              for (j in seq_along(sp_cols_keep)) {
+                sc <- sp_cols_keep[j]
+                sc_q <- as.character(DBI::dbQuoteIdentifier(con, sc))
+                if (collide[j]) {
+                  # alias to avoid duplicates
+                  alias <- paste0("sp.", sc)
+                  alias_q <- as.character(DBI::dbQuoteIdentifier(con, alias))
+                  sel_sp <- c(sel_sp, sprintf("s.%s AS %s", sc_q, alias_q))
+                } else {
+                  sel_sp <- c(sel_sp, sprintf("s.%s", sc_q))
+                }
+              }
+              sel_sp_sql <- paste(sel_sp, collapse = ",\n          ")
+              
+              # 5) Do the LEFT JOIN with numeric-safe casting
+              DBI::dbExecute(con, sprintf("
+          CREATE TABLE uploaded__sp AS
+          SELECT
+            u.*%s%s
+          FROM uploaded u
+          LEFT JOIN species_lu s
+            ON TRY_CAST(%s AS BIGINT) = TRY_CAST(s.%s AS BIGINT);
+        ",
+                                          if (length(sel_sp)) ",\n          " else "",
+                                          if (length(sel_sp)) sel_sp_sql else "",
+                                          spnum_id, bbl_id))
+              
+              DBI::dbExecute(con, "DROP TABLE uploaded;")
+              DBI::dbExecute(con, "ALTER TABLE uploaded__sp RENAME TO uploaded;")
+              DBI::dbExecute(con, 'ALTER TABLE uploaded ADD COLUMN IF NOT EXISTS "_species_merged" BOOLEAN;')
+              DBI::dbExecute(con, 'UPDATE uploaded SET "_species_merged" = TRUE;')
+            }
+          }
+        }
+      } else {
+        message("[Upload] No SpeciesForMaps* file found in Look Ups; skipping species merge.")
+      }
+      
+      # 2) (Re)compute derived fields that must exist before filtering (e.g., Corr.Year)
+      #    Corr.Year := ifelse(R.Month < 6, R.Year - 1, R.Year)
+      #    We resolve the actual column names tolerantly in case the CSV used spaces/underscores instead of dots.
+      cols_df <- DBI::dbGetQuery(con, "PRAGMA table_info('uploaded');")
+      all_cols <- cols_df$name
+      
+      find_like <- function(cols, target) {
+        key <- .canon_name(target)
+        canon <- vapply(cols, .canon_name, character(1))
+        hit <- cols[canon == key]
+        if (length(hit)) return(hit[[1]])
+        variants <- unique(c(target, gsub("\\.", " ", target), gsub("\\.", "_", target), gsub("\\.", "", target)))
+        for (v in variants) {
+          key2 <- .canon_name(v)
+          hit2 <- cols[canon == key2]
+          if (length(hit2)) return(hit2[[1]])
+        }
+        NA_character_
+      }
+      
+      # NEW: if Corr already exists (accept 'R.Corr.Year' OR 'Corr.Year'), skip recompute
+      corr_existing <- find_like(all_cols, "R.Corr.Year")
+      if (is.na(corr_existing)) corr_existing <- find_like(all_cols, "Corr.Year")
+      
+      if (!is.na(corr_existing)) {
+        message("[Upload] Skipping Corr.Year (already present as: ", corr_existing, ")")
+      } else {
+        r_month_col <- find_like(all_cols, "R.Month")
+        r_year_col  <- find_like(all_cols, "R.Year")
+        
+        if (!is.na(r_month_col) && !is.na(r_year_col)) {
+          month_id <- as.character(DBI::dbQuoteIdentifier(con, r_month_col))
+          year_id  <- as.character(DBI::dbQuoteIdentifier(con, r_year_col))
+          corr_id  <- as.character(DBI::dbQuoteIdentifier(con, "Corr.Year"))
+          
+          DBI::dbExecute(con, sprintf("
+      CREATE TABLE uploaded__calc AS
+      SELECT
+        u.*,
+        CASE
+          WHEN TRY_CAST(%s AS INTEGER) IS NOT NULL
+               AND TRY_CAST(%s AS INTEGER) < 6
+          THEN TRY_CAST(%s AS INTEGER) - 1
+          ELSE TRY_CAST(%s AS INTEGER)
+        END AS %s
+      FROM uploaded u;
+    ", month_id, month_id, year_id, year_id, corr_id))
+          DBI::dbExecute(con, "DROP TABLE uploaded;")
+          DBI::dbExecute(con, "ALTER TABLE uploaded__calc RENAME TO uploaded;")
+          
+        } else {
+          warning("[Upload] Could not compute Corr.Year: missing columns R.Month / R.Year (or variants).")
+        }
+      }
+      
+      # 3) Proceed with state return
       cols <- DBI::dbGetQuery(con, "PRAGMA table_info('uploaded');")
       validate(need(nrow(cols) > 0, tr("Uploaded table has no columns")))
       
       db_state(list(con = con, table = "uploaded", cols = cols, db_file = db_file))
-      
       
       # 🔚 ADD: small delay then hide overlay (ensures UI had time to render)
       shinyjs::delay(100, {

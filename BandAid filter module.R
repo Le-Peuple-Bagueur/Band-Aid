@@ -56,7 +56,7 @@ mod_filters_server <- function(id, data_source, lang) {
       # input$distinct_limit may be NULL until UI is rendered
       x <- input$distinct_limit %||% 20000
       # optional safety clamp:
-      x <- max(500, min(100000, as.integer(x)))
+      x <- max(4000, min(100000, as.integer(x)))
       x
     })
     
@@ -100,8 +100,8 @@ mod_filters_server <- function(id, data_source, lang) {
         numericInput(
           session$ns("distinct_limit"),
           tr("Max values shown in lists"),
-          value = input$distinct_limit %||% 500,
-          min = 500, max = 100000, step = 500
+          value = input$distinct_limit %||% 4000,
+          min = 4000, max = 100000, step = 1000
         ),
         lapply(seq_len(n), function(i) {
           fluidRow(
@@ -135,10 +135,8 @@ mod_filters_server <- function(id, data_source, lang) {
         }),
         
         fluidRow(
-          column(3, actionButton(session$ns("apply"), tr("Apply"), class = "btn-primary")),
-          column(3, actionButton(session$ns("reset"), tr("Reset"))),
-          column(3, downloadButton(session$ns("download_csv"), tr("CSV"))),
-          column(3, downloadButton(session$ns("download_xlsx"), tr("Excel (preview)")))
+          column(6, actionButton(session$ns("apply"), tr("Apply"), class = "btn-primary")),
+          column(6, actionButton(session$ns("reset"), tr("Reset")))
         )
       )
     })
@@ -335,35 +333,35 @@ mod_filters_server <- function(id, data_source, lang) {
       list(where_sql = where_sql, filter_summary = summary_txt, preview = preview)
     }, ignoreInit = TRUE)
     
-    output$download_csv <- downloadHandler(
-      filename = function() paste0("filtered_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv"),
-      content = function(file) {
-        ds <- data_source(); req(ds)
-        res <- compute_result(); req(res)
-        ...
-        DBI::dbExecute(ds$con, glue::glue("
-          COPY (SELECT * FROM {ds$table} WHERE {res$where_sql})
-          TO '{out}' (HEADER, DELIMITER ',');
-        "))
-      }
-    )
+    # output$download_csv <- downloadHandler(
+    #   filename = function() paste0("filtered_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv"),
+    #   content = function(file) {
+    #     ds <- data_source(); req(ds)
+    #     res <- compute_result(); req(res)
+    #     ...
+    #     DBI::dbExecute(ds$con, glue::glue("
+    #       COPY (SELECT * FROM {ds$table} WHERE {res$where_sql})
+    #       TO '{out}' (HEADER, DELIMITER ',');
+    #     "))
+    #   }
+    # )
+    # 
+    # output$download_xlsx <- downloadHandler(
+    #   filename = function() paste0("filtered_preview_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx"),
+    #   content = function(file) {
+    #     res <- compute_result(); req(res)
+    #     wb <- openxlsx::createWorkbook()
+    #     openxlsx::addWorksheet(wb, "Preview")
+    #     openxlsx::writeDataTable(wb, "Preview", res$preview)
+    #     openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
+    #   }
+    # )
     
-    output$download_xlsx <- downloadHandler(
-      filename = function() paste0("filtered_preview_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx"),
-      content = function(file) {
-        res <- compute_result(); req(res)
-        wb <- openxlsx::createWorkbook()
-        openxlsx::addWorksheet(wb, "Preview")
-        openxlsx::writeDataTable(wb, "Preview", res$preview)
-        openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
-      }
-    )
-    
-    observe({
-      enabled <- !is.null(compute_result())
-      shinyjs::toggleState(session$ns("download_csv"), enabled)
-      shinyjs::toggleState(session$ns("download_xlsx"), enabled)
-    })
+    # observe({
+    #   enabled <- !is.null(compute_result())
+    #   shinyjs::toggleState(session$ns("download_csv"), enabled)
+    #   shinyjs::toggleState(session$ns("download_xlsx"), enabled)
+    # })
     
     observeEvent(input$reset, {
       updateNumericInput(session, "n_filters", value = 1)

@@ -50,7 +50,6 @@ ensure_chromote_chrome <- function() {
 win_normpath <- function(p) normalizePath(p, winslash = "/", mustWork = FALSE)
 
 
-
 # =========================================================
 # UI
 # =========================================================
@@ -69,11 +68,20 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
       message("[Export] download_map_jpeg clicked at ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
     }, ignoreInit = TRUE)
     
-    # Minimal 1x1 JPEG writer (absolute last-resort fallback)
+    # Minimal JPEG fallback that always renders
     .write_placeholder_jpeg <- function(path) {
       path <- normalizePath(path, winslash = "/", mustWork = FALSE)
-      grDevices::jpeg(filename = path, width = 2, height = 2, units = "px", quality = 90)
-      plot.new(); grDevices::dev.off()
+      grDevices::jpeg(filename = path, width = 200, height = 120, units = "px", quality = 85)
+      op <- par(no.readonly = TRUE)
+      on.exit({
+        try(par(op), silent = TRUE)
+        grDevices::dev.off()
+      }, add = TRUE)
+      par(mar = c(0, 0, 0, 0), xaxs = "i", yaxs = "i")
+      plot.new()
+      plot.window(xlim = c(0, 1), ylim = c(0, 1))
+      rect(0, 0, 1, 1, col = "white", border = NA)
+      text(0.5, 0.5, labels = "Export failed", cex = 0.9)
       invisible(TRUE)
     }
     

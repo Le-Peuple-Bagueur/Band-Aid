@@ -68,8 +68,13 @@ mod_table_server <- function(id, filtered_data, lang) {
       }
     }
     
+    strip_internal_cols <- function(df) {
+      drop <- intersect(names(df), c("_lookups_applied", "_species_merged", "lat_norm", "lon_norm"))
+      if (length(drop)) df <- df[, setdiff(names(df), drop), drop = FALSE]
+      df
+    }
+    
     # ===== Status (persist across UI re-renders) =====
-    species_status_txt  <- reactiveVal("")
     stations_status_txt <- reactiveVal("")
     
     # ===== MERGE PANEL UI (collapsed by default) =====
@@ -82,99 +87,41 @@ mod_table_server <- function(id, filtered_data, lang) {
       
       # IMPORTANT: omit the `open` attribute entirely so <details> starts collapsed.
       tags$details(
-        tags$summary(tags$strong(tr("Add Species and Station Names"))),
+        tags$summary(tags$strong(tr("Add Station Names"))),
         br(),
         
         # =====================
-        # SPECIES MERGE
-        # =====================
-        h4(tr("Species")),
-        
-        checkboxInput(
-          ns("merge_species"),
-          tr("Merge with species file"),
-          value = FALSE
-        ),
-        
-        conditionalPanel(
-          condition = sprintf("input['%s'] == true", ns("merge_species")),
-          div(
-            style = "margin-left: 12px;",
-            
-            fileInput(
-              ns("species_file"),
-              tr("Upload species file (CSV or Excel)"),
-              accept = c(".csv", ".xlsx")
-            ),
-            
-            selectInput(
-              ns("base_species_join"),
-              tr("Base join field (base data)"),
-              choices = NULL
-            ),
-            
-            selectInput(
-              ns("species_join"),
-              tr("Species join field (species file)"),
-              choices = NULL
-            ),
-            
-            actionButton(
-              ns("apply_species"),
-              tr("Apply species merge"),
-              class = "btn-primary"
-            ),
-            
-            br(), br(),
-            textOutput(ns("species_status"))
-          )
-        ),
-        
-        hr(),
-        
-        # =====================
-        # STATIONS MERGE
+        # STATIONS MERGE (always-on)
         # =====================
         h4(tr("Stations")),
         
-        checkboxInput(
-          ns("merge_stations"),
-          tr("Merge with station file"),
-          value = FALSE
-        ),
-        
-        conditionalPanel(
-          condition = sprintf("input['%s'] == true", ns("merge_stations")),
-          div(
-            style = "margin-left: 12px;",
-            
-            fileInput(
-              ns("stations_file"),
-              tr("Upload stations file (CSV or Excel)"),
-              accept = c(".csv", ".xlsx")
-            ),
-            
-            selectInput(
-              ns("stations_lat"),
-              tr("Latitude field (stations)"),
-              choices = NULL
-            ),
-            
-            selectInput(
-              ns("stations_long"),
-              tr("Longitude field (stations)"),
-              choices = NULL
-            ),
-            
-            actionButton(
-              ns("apply_stations"),
-              tr("Apply stations merge"),
-              class = "btn-primary"
-            ),
-            
-            br(), br(),
-            textOutput(ns("stations_status"))
-          )
+        div(
+          style = "margin-left: 12px;",
+          
+          fileInput(
+            ns("stations_file"),
+            tr("Upload stations file (CSV or Excel)"),
+            accept = c(".csv", ".xlsx")
+          ),
+          
+          selectInput(
+            ns("stations_lat"),
+            tr("Latitude field (stations)"),
+            choices = NULL
+          ),
+          
+          selectInput(
+            ns("stations_long"),
+            tr("Longitude field (stations)"),
+            choices = NULL
+          ),
+          
+          br(),
+          tags$small(tags$em(
+            tr("The merge runs automatically whenever the station file or the selections change.")
+          )),
+          br(), br(),
+          textOutput(ns("stations_status"))
         )
       )
     })
@@ -191,141 +138,81 @@ mod_table_server <- function(id, filtered_data, lang) {
         DT::DTOutput(ns("table")),
         hr(),
         fluidRow(
-          column(6, downloadButton(ns("download_csv"), tr("Download CSV"))),
+          column(6, downloadButton(ns("download_csv"),  tr("Download CSV"))),
           column(6, downloadButton(ns("download_xlsx"), tr("Download Excel")))
         )
       )
     })
     
-    # ===== Read files =====
-    species_data <- reactive({
-      req(input$species_file)
-      read_any(input$species_file)
-    })
-    
+    # ===== Read stations file =====
     stations_data <- reactive({
       req(input$stations_file)
       read_any(input$stations_file)
     })
     
-    # ===== Update dropdowns =====
-    observeEvent(filtered_data(), {
-      df <- filtered_data()
-      req(df)
-      
-      updateSelectInput(
-        session,
-        "base_species_join",
-        choices = names(df),
-        selected = {
-          prefs <- c("Sp..Num.", "Sp.Num.", "SpNum", "Sp_Num", "SpeciesID", "Species_Id")
-          hit <- prefs[prefs %in% names(df)]
-          if (length(hit) > 0) hit[1] else names(df)[1]
-        }
-      )
-    })
-    
-    observeEvent(species_data(), {
-      sp <- species_data()
-      req(sp)
-      
-      updateSelectInput(
-        session,
-        "species_join",
-        choices = names(sp),
-        selected = {
-          prefs <- c("Sp..Num.", "Sp.Num.", "SpNum", "Sp_Num", "SpeciesID", "Species_Id")
-          hit <- prefs[prefs %in% names(sp)]
-          if (length(hit) > 0) hit[1] else names(sp)[1]
-        }
-      )
-    })
-    
+    # Auto-fill likely lat/long field names when the file changes
     observeEvent(stations_data(), {
       st <- stations_data()
       req(st)
-      updateSelectInput(session, "stations_lat",  choices = names(st))
-      updateSelectInput(session, "stations_long", choices = names(st))
+      
+      st_names <- names(st)
+      lat_guess <- c("Latitude", "LATITUDE", "Lat", "LAT", "Y", "y")
+      lon_guess <- c("Longitude", "LONGITUDE", "Long", "LON", "Lon", "X", "x")
+      
+      updateSelectInput(session, "stations_lat",
+                        choices = st_names,
+                        selected = {
+                          hit <- lat_guess[lat_guess %in% st_names]
+                          if (length(hit)) hit[1] else st_names[1]
+                        }
+      )
+      updateSelectInput(session, "stations_long",
+                        choices = st_names,
+                        selected = {
+                          hit <- lon_guess[lon_guess %in% st_names]
+                          if (length(hit)) hit[1] else st_names[min(2, length(st_names))]
+                        }
+      )
     })
     
-    merged_species  <- reactiveVal(NULL)
-    merged_stations <- reactiveVal(NULL)
-    
-    # ===== SPECIES MERGE =====
-    observeEvent(input$apply_species, {
-      
+    # ===== Always-on STATIONS MERGE (reactive) =====
+    merged_stations <- reactive({
       current_lang <- lang()
       req(current_lang)
       sync_i18n_lang(current_lang)
       
-      req(filtered_data(), species_data(), input$base_species_join, input$species_join)
+      base <- filtered_data()
+      req(base)
       
-      df <- filtered_data()
-      sp <- species_data()
-      
-      base_key <- input$base_species_join
-      sp_key   <- input$species_join
-      
-      if (!(base_key %in% names(df))) {
-        species_status_txt(paste0("❌ ", tr("Base data missing selected join field:"), " ", base_key))
-        return()
+      # If no station file provided, just pass through
+      if (is.null(input$stations_file)) {
+        stations_status_txt("")
+        return(base)
       }
       
-      if (!(sp_key %in% names(sp))) {
-        species_status_txt(paste0("❌ ", tr("Species file missing selected join field:"), " ", sp_key))
-        return()
-      }
+      st <- stations_data()
+      req(st)
       
-      required_sp_cols <- c("English_Name", "French_Name")
-      if (!all(required_sp_cols %in% names(sp))) {
-        species_status_txt(
-          paste0("❌ ", tr("Species file must contain:"), " ", paste(required_sp_cols, collapse = ", "))
-        )
-        return()
-      }
-      
-      merged <- merge(
-        df,
-        sp[, c(sp_key, "English_Name", "French_Name")],
-        by.x = base_key,
-        by.y = sp_key,
-        all.x = TRUE
-      )
-      
-      merged_species(merged)
-      
-      species_status_txt(
-        paste0(
-          "✅ ",
-          tr("Species merge successful"),
-          " (", nrow(merged), " ", tr("rows"), ") ",
-          tr("using base"), "=", base_key, " ↔ ",
-          tr("species"), "=", sp_key
-        )
-      )
-    })
-    
-    # ===== STATIONS MERGE =====
-    observeEvent(input$apply_stations, {
-      
-      current_lang <- lang()
-      req(current_lang)
-      sync_i18n_lang(current_lang)
-      
-      base <- if (!is.null(merged_species())) merged_species() else filtered_data()
-      st   <- stations_data()
-      req(base, st, input$stations_lat, input$stations_long)
-      
+      # Validate base has coords
       if (!all(c("GISBLat", "GISBLong") %in% names(base))) {
         stations_status_txt(paste0("❌ ", tr("Base data missing GISBLat / GISBLong")))
-        return()
+        return(base)
       }
       
+      # Validate station lat/long picks
+      lat_col <- input$stations_lat
+      lon_col <- input$stations_long
+      if (!length(lat_col) || !length(lon_col) || !(lat_col %in% names(st)) || !(lon_col %in% names(st))) {
+        stations_status_txt(paste0("ℹ️ ", tr("Select station latitude/longitude fields to merge.")))
+        return(base)
+      }
+      
+      # Normalize numerics for a stable join
       base$lat_norm <- normalize_num(base$GISBLat)
       base$lon_norm <- normalize_num(base$GISBLong)
       
-      st$lat_norm <- normalize_num(st[[input$stations_lat]])
-      st$lon_norm <- normalize_num(st[[input$stations_long]])
+      st$lat_norm <- normalize_num(st[[lat_col]])
+      st$lon_norm <- normalize_num(st[[lon_col]])
       
       merged <- merge(
         base,
@@ -333,38 +220,19 @@ mod_table_server <- function(id, filtered_data, lang) {
         by = c("lat_norm", "lon_norm"),
         all.x = TRUE
       )
-      
-      merged_stations(merged)
+      merged[ c(lat_col, lon_col) ] <- NULL
       
       stations_status_txt(
         paste0("✅ ", tr("Stations merge successful"), " (", nrow(merged), " ", tr("rows"), ")")
       )
+      
+      merged
     })
     
-    # ===== Status outputs =====
-    output$species_status <- renderText({
-      current_lang <- lang()
-      req(current_lang)
-      sync_i18n_lang(current_lang)
-      species_status_txt()
-    })
-    
-    output$stations_status <- renderText({
-      current_lang <- lang()
-      req(current_lang)
-      sync_i18n_lang(current_lang)
-      stations_status_txt()
-    })
-    
-    # ===== Final data =====
+    # ===== Final data (station-only, internal columns stripped) =====
     final_data <- reactive({
-      if (isTRUE(input$merge_stations) && !is.null(merged_stations())) {
-        merged_stations()
-      } else if (isTRUE(input$merge_species) && !is.null(merged_species())) {
-        merged_species()
-      } else {
-        filtered_data()
-      }
+      out <- merged_stations()
+      strip_internal_cols(out)
     })
     
     # ===== Table =====
@@ -373,17 +241,21 @@ mod_table_server <- function(id, filtered_data, lang) {
       req(current_lang)
       sync_i18n_lang(current_lang)
       
-      req(final_data())
+      df <- final_data()
+      req(df)
+      
       DT::datatable(
-        final_data(),
+        df,
         options = list(scrollX = TRUE, pageLength = 25)
       )
     })
     
-    # ===== Downloads =====
+    # ===== Downloads (strip internal columns just in case) =====
     output$download_csv <- downloadHandler(
       filename = function() paste0("table_", Sys.Date(), ".csv"),
-      content = function(file) write.csv(final_data(), file, row.names = FALSE)
+      content = function(file) {
+        write.csv(strip_internal_cols(final_data()), file, row.names = FALSE)
+      }
     )
     
     output$download_xlsx <- downloadHandler(
@@ -391,7 +263,7 @@ mod_table_server <- function(id, filtered_data, lang) {
       content = function(file) {
         wb <- openxlsx::createWorkbook()
         openxlsx::addWorksheet(wb, "Data")
-        openxlsx::writeDataTable(wb, "Data", final_data())
+        openxlsx::writeDataTable(wb, "Data", strip_internal_cols(final_data()))
         openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
       }
     )
@@ -401,8 +273,6 @@ mod_table_server <- function(id, filtered_data, lang) {
       outputOptions(output, "merge_ui",        suspendWhenHidden = FALSE)
       outputOptions(output, "table_ui",        suspendWhenHidden = FALSE)
       outputOptions(output, "table",           suspendWhenHidden = FALSE)
-      outputOptions(output, "species_status",  suspendWhenHidden = FALSE)
-      outputOptions(output, "stations_status", suspendWhenHidden = FALSE)
     }, once = TRUE)
     
     return(final_data)
