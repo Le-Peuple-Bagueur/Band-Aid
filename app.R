@@ -4,7 +4,7 @@
 required_pkgs <- c(
   # Core app
   "shiny", "bslib", "DT", "readr", "readxl", "shinyjs", "openxlsx",
-  "dplyr", "leaflet", "leaflet.extras", "shinyjqui", "viridisLite",
+  "dplyr", "leaflet", "leaflet.extras2", "shinyjqui", "viridisLite",
   # i18n + supporting
   "shiny.i18n",
   # DB
@@ -48,7 +48,7 @@ library(shinyjs)
 library(openxlsx)
 library(dplyr)
 library(leaflet)
-library(leaflet.extras)
+library(leaflet.extras2)
 library(shinyjqui)
 library(viridisLite)
 
