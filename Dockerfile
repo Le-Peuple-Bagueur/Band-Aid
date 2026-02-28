@@ -32,7 +32,9 @@ RUN R -e "install.packages(c( \
 EXPOSE 8080
 
 # Modifier la config Shiny Server pour écouter sur 8080
-RUN sed -i 's/3838/8080/' /etc/shiny-server/shiny-server.conf
+RUN sed -i 's|site_dir .*|site_dir /srv/shiny-server/app;|' /etc/shiny-server/shiny-server.conf \
+    && sed -i 's/3838/8080/' /etc/shiny-server/shiny-server.conf
+
 
 # Lancer Shiny Server
 CMD ["/usr/bin/shiny-server"]
