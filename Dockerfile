@@ -22,7 +22,7 @@ COPY . /srv/shiny-server/app
 
 # Installer les packages R nécessaires
 RUN R -e "install.packages(c(
-    'shiny', 'bslib', 'readxl', 'openxlsx',
+    'shiny', 'bslib', 'readxl', 'openxlsx', 'shinyjqui',
     'leaflet', 'leaflet.extras2', 'viridislite', 'shiny.i18n',
     'webshot2', 'markdown', 'shinydashboard', 'DT',
     'dplyr', 'readr', 'stringr', 'glue', 'purrr', 'tidyr',
