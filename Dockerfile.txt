@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Définir le répertoire de travail
+# Définir le répertoire de travail...
 WORKDIR /srv/shiny-server/app
 
 # Copier ton app dans l'image
