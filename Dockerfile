@@ -24,7 +24,7 @@ COPY . /srv/shiny-server/app
 RUN R -e "install.packages(c( \
     'shiny', 'bslib', 'readxl','openxlsx', 'leaflet','leaflet.extras2','shinyqui','viridislite','shiny.i18n', \
 'mapview', 'webshot2','rstudioapi','markdown','shinydashboard', 'DT', \
-'dplyr', 'readr', 'stringr', \
+'dplyr', 'readr', 'stringr', 'stats', 'tools', parallel','grDevices', 'chromote', htmlwidgets', \ 
     'glue', 'purrr', 'tidyr', 'duckdb', 'DBI', 'shinyjs', 'shinyWidgets' \
 ))"
 
