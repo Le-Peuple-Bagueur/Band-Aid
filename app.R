@@ -104,6 +104,7 @@ library(parallel)
 library(grDevices)
 library(chromote)
 library(htmlwidgets)
+library(webshot2)
 
 # Fallback markdown conversion (only used if files are missing)
 library(markdown)
