@@ -924,7 +924,11 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
         message("[Export] Using browser: ", browser_path)
         
         html_tmp <- tempfile(fileext = ".html")
-        htmlwidgets::saveWidget(m, html_tmp, selfcontained = TRUE)
+        
+        htmlwidgets::saveWidget(
+          m, html_tmp, selfcontained = FALSE,
+          libdir = paste0(tools::file_path_sans_ext(basename(html_tmp)), "_files")
+        )
         
         ok <- FALSE
         err_last <- NULL

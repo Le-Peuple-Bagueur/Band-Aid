@@ -56,7 +56,7 @@ required_pkgs <- c(
   # Plot export (used in Plot module for mapshot2)
   "webshot2",
   # For includeMarkdown() + markdownToHTML fallback
-  "markdown", 'pandoc'
+  "markdown"
 )
 
 ensure_packages <- function(pkgs, repos = "https://cloud.r-project.org") {
@@ -69,8 +69,6 @@ ensure_packages <- function(pkgs, repos = "https://cloud.r-project.org") {
 }
 
 ensure_packages(required_pkgs)
-
-
 
 
 # ===============================
@@ -109,35 +107,48 @@ library(htmlwidgets)
 
 # Fallback markdown conversion (only used if files are missing)
 library(markdown)
-library(pandoc)
+
 
 options(shiny.maxRequestSize = 1500 * 1024^2)
 options(shiny.launch.browser = TRUE)
 
+#################################################
 get_app_dir <- function() {
-  # 1) If running as a script (Rscript), use the script path
-  cmdArgs <- commandArgs(trailingOnly = FALSE)
-  fileArg <- "--file="
-  script_path <- sub(fileArg, "", cmdArgs[grep(fileArg, cmdArgs)])
-  if (length(script_path) == 1 && nzchar(script_path)) {
-    return(dirname(normalizePath(script_path, winslash = "/", mustWork = TRUE)))
+  # 1) Rscript --file=... case
+  cmdArgs   <- commandArgs(trailingOnly = FALSE)
+  fileArg   <- "--file="
+  scriptArg <- cmdArgs[grep(fileArg, cmdArgs)]
+  if (length(scriptArg) == 1L) {
+    script_path <- sub(fileArg, "", scriptArg)
+    if (nzchar(script_path)) {
+      return(dirname(normalizePath(script_path, winslash = "/", mustWork = TRUE)))
+    }
   }
   
-  # 2) If running interactively (RStudio, VSCode, terminal), use sys.frames
+  # 2) Try to discover the file from the call stack (e.g., source())
   of <- tryCatch(sys.frame(1)$ofile, error = function(e) "")
-  if (is.character(of) && length(of) == 1 && nzchar(of)) {
+  if (is.character(of) && length(of) == 1L && nzchar(of)) {
     return(dirname(normalizePath(of, winslash = "/", mustWork = TRUE)))
   }
   
-  # 3) Fallback: working directory (Docker, Cloud Run)
+  # 3) RStudio IDE – active document (works interactively)
+  if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    ctx <- tryCatch(rstudioapi::getActiveDocumentContext(), error = function(e) NULL)
+    if (!is.null(ctx) && nzchar(ctx$path)) {
+      return(dirname(normalizePath(ctx$path, winslash = "/", mustWork = TRUE)))
+    }
+  }
+  
+  # 4) Fallback: working directory (common for Shiny in prod)
   normalizePath(getwd(), winslash = "/", mustWork = TRUE)
 }
 
+# Example usage
 APP_DIR <- get_app_dir()
+message("APP_DIR = ", APP_DIR)
+################################################
 
-message("app_dir = ", app_dir)
-
-json_path <- file.path(app_dir, "translations", "translation.json")
+json_path <- file.path(APP_DIR, "translations", "translation.json")
 message("translation.json path = ", json_path)
 
 i18n <- shiny.i18n::Translator$new(translation_json_path = json_path)
@@ -155,10 +166,10 @@ tr <- function(x) i18n$t(x)
 assign("i18n", i18n, envir = .GlobalEnv)
 assign("tr", tr, envir = .GlobalEnv)
 
-source(file.path(app_dir, "BandAid upload module.R"), local = FALSE)
-source(file.path(app_dir, "BandAid filter module.R"), local = FALSE)
-source(file.path(app_dir, "BandAid Table module.R"),  local = FALSE)
-source(file.path(app_dir, "BandAid Plot module.R"),   local = FALSE)
+source(file.path(APP_DIR, "BandAid upload module.R"), local = FALSE)
+source(file.path(APP_DIR, "BandAid filter module.R"), local = FALSE)
+source(file.path(APP_DIR, "BandAid Table module.R"),  local = FALSE)
+source(file.path(APP_DIR, "BandAid Plot module.R"),   local = FALSE)
 
 # --- Embedded English fallbacks (used if Markdown files are missing) ---
 embedded_instructions_en <- "
@@ -819,8 +830,8 @@ server <- function(input, output, session) {
     lang <- input$lang
     
     # ./help/<mode>_<lang>.md ; fallback to en; else fallback to embedded English
-    md_lang <- file.path(app_dir, "help", sprintf("%s_%s.md", mode, lang))
-    md_en   <- file.path(app_dir, "help", sprintf("%s_en.md", mode))
+    md_lang <- file.path(APP_DIR, "help", sprintf("%s_%s.md", mode, lang))
+    md_en   <- file.path(APP_DIR, "help", sprintf("%s_en.md", mode))
     
     if (file.exists(md_lang)) {
       includeMarkdown(md_lang)
