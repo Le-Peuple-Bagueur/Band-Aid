@@ -1,7 +1,7 @@
-# Image de base optimisée pour Shiny
+# Base image with Shiny Server
 FROM rocker/shiny:4.3.2
 
-# Mise à jour et installation des dépendances système
+# System deps (minimal + chromium for webshot2/chromote screenshots)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     libcurl4-openssl-dev \
@@ -11,33 +11,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libtiff5-dev \
     libjpeg-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    chromium \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
-# Définir le répertoire de travail...
+# Ensure Shiny Server can read $PORT from env; provide our own config later
+ENV PORT=8080
+ENV CHROMOTE_CHROME=/usr/bin/chromium
+
+# Workdir for the app
 WORKDIR /srv/shiny-server/app
 
-# Copier ton app dans l'image
+# Copy app source
 COPY . /srv/shiny-server/app
 
-# Installer les packages R nécessaires
+# Install required R packages (extend as needed)
 RUN R -e "install.packages(c( \
-    'shiny', 'bslib', 'readr','readxl','shinyjs', 'openxlsx', 'shinyjqui', \
-    'leaflet', 'leaflet.extras2', 'viridislite', 'shiny.i18n', \
-    'webshot2', 'markdown', 'shinydashboard', 'DT', \
-    'dplyr', 'stringr', 'glue', 'purrr', 'tidyr', \
-    'duckdb', 'DBI', 'shinyWidgets', 'chromote', 'parallel', 'grDevices', \
-    'htmlwidgets' \
-))"
+    'shiny','bslib','readr','readxl','shinyjs','openxlsx','shinyjqui', \
+    'leaflet','leaflet.extras2','viridislite','shiny.i18n', \
+    'webshot2','markdown','shinydashboard','DT', \
+    'dplyr','stringr','glue','purrr','tidyr', \
+    'duckdb','DBI','shinyWidgets','chromote','htmlwidgets' \
+  ), repos='https://cran.rstudio.com/')"
 
+# Supply a clean Shiny Server config that listens on $PORT and serves /srv/shiny-server/app
+COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 
-# Cloud Run exige que l'app écoute sur le port 8080
+# Cloud Run sends traffic to $PORT (default 8080)
 EXPOSE 8080
 
-# Modifier la config Shiny Server pour écouter sur 8080
-RUN sed -i 's|site_dir .*|site_dir /srv/shiny-server/app;|' /etc/shiny-server/shiny-server.conf \
-    && sed -i 's/3838/8080/' /etc/shiny-server/shiny-server.conf
-
-
-# Lancer Shiny Server
+# Run Shiny Server
 CMD ["/usr/bin/shiny-server"]
