@@ -15,6 +15,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
+
+# Add Google’s repo and install Chrome (headless-capable)
+RUN set -eux; \
+    mkdir -p /usr/share/keyrings; \
+    curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
+      | gpg --dearmor -o /usr/share/keyrings/google-linux-keyring.gpg; \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
+      > /etc/apt/sources.list.d/google-chrome.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends google-chrome-stable fonts-liberation; \
+    rm -rf /var/lib/apt/lists/*
+
 # Ensure Shiny Server can read $PORT from env; provide our own config later
 ENV PORT=8080
 ENV CHROMOTE_CHROME=/usr/bin/chromium
