@@ -21,13 +21,13 @@ WORKDIR /srv/shiny-server/app
 COPY . /srv/shiny-server/app
 
 # Installer les packages R nécessaires
-RUN R -e "install.packages(c(
-    'shiny', 'bslib', 'readr','readxl','shinyjs', 'openxlsx', 'shinyjqui',
-    'leaflet', 'leaflet.extras2', 'viridislite', 'shiny.i18n',
-    'webshot2', 'markdown', 'shinydashboard', 'DT',
-    'dplyr', 'stringr', 'glue', 'purrr', 'tidyr',
-    'duckdb', 'DBI', 'shinyWidgets', 'chromote', 'parallel', 'grDevices',
-    'htmlwidgets'
+RUN R -e "install.packages(c( \
+    'shiny', 'bslib', 'readr','readxl','shinyjs', 'openxlsx', 'shinyjqui', \
+    'leaflet', 'leaflet.extras2', 'viridislite', 'shiny.i18n', \
+    'webshot2', 'markdown', 'shinydashboard', 'DT', \
+    'dplyr', 'stringr', 'glue', 'purrr', 'tidyr', \
+    'duckdb', 'DBI', 'shinyWidgets', 'chromote', 'parallel', 'grDevices', \
+    'htmlwidgets' \
 ))"
 
 
