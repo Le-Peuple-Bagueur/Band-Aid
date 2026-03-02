@@ -54,7 +54,7 @@ required_pkgs <- c(
   # DB
   "DBI", "duckdb", "glue",
   # Plot export (used in Plot module for mapshot2)
-  "webshot2",
+  "webshot2", 'parallel', 'grDevices', 'chromote', 'htmlwidgets',
   # For includeMarkdown() + markdownToHTML fallback
   "markdown"
 )
