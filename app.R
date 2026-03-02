@@ -56,7 +56,7 @@ required_pkgs <- c(
   # Plot export (used in Plot module for mapshot2)
   "webshot2",
   # For includeMarkdown() + markdownToHTML fallback
-  "markdown"
+  "markdown", 'pandoc'
 )
 
 ensure_packages <- function(pkgs, repos = "https://cloud.r-project.org") {
@@ -69,6 +69,8 @@ ensure_packages <- function(pkgs, repos = "https://cloud.r-project.org") {
 }
 
 ensure_packages(required_pkgs)
+
+
 
 
 # ===============================
@@ -107,6 +109,7 @@ library(htmlwidgets)
 
 # Fallback markdown conversion (only used if files are missing)
 library(markdown)
+#library(pandoc)
 
 options(shiny.maxRequestSize = 1500 * 1024^2)
 options(shiny.launch.browser = TRUE)
