@@ -109,7 +109,7 @@ library(htmlwidgets)
 
 # Fallback markdown conversion (only used if files are missing)
 library(markdown)
-#library(pandoc)
+library(pandoc)
 
 options(shiny.maxRequestSize = 1500 * 1024^2)
 options(shiny.launch.browser = TRUE)
