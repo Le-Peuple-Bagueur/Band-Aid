@@ -3,6 +3,7 @@ FROM rocker/shiny:4.3.2
 
 # System deps (minimal + chromium for webshot2/chromote screenshots)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     libssl-dev \
     libcurl4-openssl-dev \
     libxml2-dev \
@@ -16,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-
 # Install Google Chrome (headless-capable) from Google's repo
 RUN set -eux; \
     mkdir -p /usr/share/keyrings; \
@@ -26,12 +26,10 @@ RUN set -eux; \
       > /etc/apt/sources.list.d/google-chrome.list; \
     apt-get update; \
     apt-get install -y --no-install-recommends google-chrome-stable fonts-liberation; \
-    # Symlinks so your existing CHROMOTE_CHROME=/usr/bin/google-chrome works
+    # Symlinks so BOTH paths work for chromote/webshot2
     if [ ! -e /usr/bin/google-chrome ]; then ln -s /usr/bin/google-chrome-stable /usr/bin/google-chrome; fi; \
-    # Optional: also provide a chromium path if anything probes it
     if [ ! -e /usr/bin/chromium ]; then ln -s /usr/bin/google-chrome-stable /usr/bin/chromium; fi; \
     rm -rf /var/lib/apt/lists/*
-
 
 # Ensure Shiny Server can read $PORT from env; provide our own config later
 ENV PORT=8080
