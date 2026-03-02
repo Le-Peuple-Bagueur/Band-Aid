@@ -1,6 +1,14 @@
+# cloudbuild.yaml — BandAid (Google Cloud Build)
+# Builds and pushes: gcr.io/bandaid-489018/bandaid-app:latest
+
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/bandaid-489001/BAND-AID', '.']
+  - name: "gcr.io/cloud-builders/docker"
+    id: "Build container image"
+    args:
+      - "build"
+      - "-t"
+      - "gcr.io/bandaid-489018/bandaid-app:latest"
+      - "."
 
 images:
-  - 'gcr.io/bandaid-489001/BAND-AID'
+  - "gcr.io/bandaid-489018/bandaid-app:latest"
