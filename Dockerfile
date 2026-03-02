@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libtiff5-dev \
     libjpeg-dev \
-    chromium \
+    ca-certificates \
+    gnupg \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
