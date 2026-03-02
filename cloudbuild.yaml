@@ -1,0 +1,6 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/bandaid-489001/BAND-AID', '.']
+
+images:
+  - 'gcr.io/bandaid-489001/BAND-AID'
