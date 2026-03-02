@@ -7,8 +7,8 @@ steps:
     args:
       - "build"
       - "-t"
-      - "gcr.io/bandaid-489018/bandaid-app:latest"
+      - "us-central1-docker.pkg.dev/bandaid-489018/bandaid-repo/bandaid-app:latest"
       - "."
 
 images:
-  - "gcr.io/bandaid-489018/bandaid-app:latest"
+  - "us-central1-docker.pkg.dev/bandaid-489018/bandaid-repo/bandaid-app:latest"
