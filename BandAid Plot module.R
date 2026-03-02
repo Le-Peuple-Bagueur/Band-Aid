@@ -798,39 +798,23 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
     # JPEG Export (matches on-screen logic, including station filtering AND no-station marker exclusion)
     # -----------------------------------------------------
     output$download_map_jpeg <- downloadHandler(
-      filename = function() paste0("BandAid_map_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".jpg"),
+      filename = function() {
+        paste0("BandAid_map_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".jpg")
+      },
       contentType = "image/jpeg",
       content = function(file) {
         
-        
-        # Always ensure *something* gets written so Edge gets bytes
         ok_flag <- FALSE
         on.exit({
           if (!ok_flag) {
             .write_placeholder_jpeg(file)
-            warning("[Export] Map export failed early; placeholder delivered.")
+            warning("[Export] Map export failed; placeholder delivered.")
           }
         }, add = TRUE)
         
-        if (!identical(active_tab(), "map")) {
-          message("[Export] Warning: active_tab() != 'map' (got: ", as.character(active_tab()), "). Continuing.")
-        }
-        
-        
         req(lang()); sync_i18n_lang(lang())
         
-        
-        
-        
-        # (B) normalize output path
-        #file_out <- win_normpath(file)
-        
-        # (C) make sure Chrom(e/ium) is resolvable
-        ensure_chrome()
-        used <- try(chromote::find_chrome(), silent = TRUE)
-        message("[Export] Chrom(e/ium) used by webshot2: ", as.character(used))  # may show NULL if none found
-        
-        # (D) build the same data as on-screen
+        # Build the leaflet map exactly as before
         df <- plot_data(); req(df)
         sp <- species_labels()
         ids <- sp$ids
@@ -900,7 +884,7 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
           m <- m |> leaflet::setView(lng = input$map_center$lng, lat = input$map_center$lat, zoom = input$map_zoom)
         }
         
-        # (E) viewport: integers + safety caps (Chrome requires ints; extreme sizes can fail)
+        # Viewport
         dim <- input$map_dim
         w0 <- if (!is.null(dim) && !is.null(dim$w)) as.numeric(dim$w) else 1400
         h0 <- if (!is.null(dim) && !is.null(dim$h)) as.numeric(dim$h) else 900
@@ -915,64 +899,60 @@ mod_plot_server <- function(id, final_data, active_tab, lang) {
         } else {
           vheight <- h0;   vwidth <- w0
         }
-        vwidth  <- as.integer(round(vwidth))
-        vheight <- as.integer(round(vheight))
-        vwidth  <- max(100L, min(4096L, vwidth))
-        vheight <- max(100L, min(4096L, vheight))
+        vwidth  <- as.integer(max(100L, min(4096L, round(vwidth))))
+        vheight <- as.integer(max(100L, min(4096L, round(vheight))))
         
-        # Optional Chromote stabilization (safe no-op if unnecessary)
-        try(chromote::set_chrome_args("--disable-crash-reporter"), silent = TRUE)
         
-        # (G) try mapshot2 with increasing delays, then fallback to webshot2::webshot
-        delays <- c(2, 4, 6)  # seconds
-        err_last <- NULL
+        # -----------------------------------------------------
+        # NEW G SECTION — automatic browser detection + JPEG export
+        # -----------------------------------------------------
+        
+        ensure_browser <- function() {
+          path <- chromote::find_chrome()
+          if (is.null(path)) {
+            stop(
+              "No Chromium-based browser found.\n",
+              "Install Chrome, Chromium, Edge, Brave, or Vivaldi.\n",
+              "Safari cannot be used for screenshots."
+            )
+          }
+          Sys.setenv("CHROMOTE_CHROME" = path)
+          path
+        }
+        
+        browser_path <- ensure_browser()
+        message("[Export] Using browser: ", browser_path)
+        
+        html_tmp <- tempfile(fileext = ".html")
+        htmlwidgets::saveWidget(m, html_tmp, selfcontained = TRUE)
+        
         ok <- FALSE
-        for (d in delays) {
-          ok <- tryCatch({
-            mapview::mapshot2(
-              m,
-              file = file,
-              vwidth  = vwidth,
-              vheight = vheight,
-              delay   = d,
-              remove_controls = c("zoomControl","layersControl","homeButton","scaleBar","easyButton","control")
-            )
-            file.exists(file) && file.info(file)$size > 0
-          }, error = function(e) {
-            err_last <<- conditionMessage(e); FALSE
-          })
-          if (ok) break
-        }
+        err_last <- NULL
         
-        if (!ok) {
-          html_tmp <- tempfile(fileext = ".html")
-          htmlwidgets::saveWidget(m, html_tmp, selfcontained = TRUE)
-          try({
-            webshot2::webshot(
-              url     = html_tmp,
-              file    = file,
-              vwidth  = vwidth,
-              vheight = vheight,
-              delay   = 4
-            )
-          }, silent = TRUE)
+        tryCatch({
+          webshot2::webshot(
+            url     = html_tmp,
+            file    = file,
+            vwidth  = vwidth,
+            vheight = vheight,
+            delay   = 4
+          )
           ok <- file.exists(file) && file.info(file)$size > 0
-        }
+        }, error = function(e) {
+          err_last <<- conditionMessage(e)
+        })
         
         if (!ok) {
-          # Produce a tiny placeholder so the browser still offers a download
-          .write_placeholder_jpeg(file)
-          msg <- paste0("Map export failed; placeholder delivered. ",
-                        if (!is.null(err_last)) paste0("Last error: ", err_last))
-          showNotification(tr("Map export failed; a placeholder image was downloaded. Please try again."),
-                           type = "error", duration = 8)
-          warning(msg)
+          warning("[Export] Screenshot failed: ", err_last)
+        } else {
+          ok_flag <- TRUE
         }
-        if (ok) {
-          ok_flag <- TRUE  # disable on.exit placeholder
-        }
+        
       }
     )
+    
+    
+    
     
   })
 }

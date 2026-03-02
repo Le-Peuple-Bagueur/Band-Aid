@@ -1,3 +1,47 @@
+# Cross-platform browser detection for chromote/webshot2
+set_chromium_path <- function() {
+  # Try automatic detection first
+  path <- try(chromote::find_chrome(), silent = TRUE)
+  
+  # If automatic detection fails, try common macOS and Windows paths
+  if (is.null(path) || inherits(path, "try-error")) {
+    
+    # macOS Chrome
+    mac_chrome <- "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    if (file.exists(mac_chrome)) path <- mac_chrome
+    
+    # macOS Chromium
+    mac_chromium <- "/Applications/Chromium.app/Contents/MacOS/Chromium"
+    if (file.exists(mac_chromium)) path <- mac_chromium
+    
+    # macOS Brave
+    mac_brave <- "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+    if (file.exists(mac_brave)) path <- mac_brave
+    
+    # Windows Chrome
+    win_chrome <- "C:/Program Files/Google/Chrome/Application/chrome.exe"
+    if (file.exists(win_chrome)) path <- win_chrome
+    
+    # Windows Edge
+    win_edge <- "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+    if (file.exists(win_edge)) path <- win_edge
+  }
+  
+  # If still nothing found → stop
+  if (is.null(path) || !file.exists(path)) {
+    stop(
+      "No Chromium-based browser found.\n",
+      "Install Chrome, Chromium, Edge, Brave, or Vivaldi.\n",
+      "Safari cannot be used for screenshots."
+    )
+  }
+  
+  Sys.setenv("CHROMOTE_CHROME" = path)
+  message("[Startup] Using browser for screenshots: ", path)
+}
+
+set_chromium_path()
+
 # ===============================
 # 0) Ensure required packages are installed
 # ===============================
@@ -10,9 +54,7 @@ required_pkgs <- c(
   # DB
   "DBI", "duckdb", "glue",
   # Plot export (used in Plot module for mapshot2)
-  "mapview", "webshot2",
-  # Optional but used in get_app_dir (only if in RStudio)
-  "rstudioapi",
+  "webshot2",
   # For includeMarkdown() + markdownToHTML fallback
   "markdown"
 )
@@ -28,16 +70,13 @@ ensure_packages <- function(pkgs, repos = "https://cloud.r-project.org") {
 
 ensure_packages(required_pkgs)
 
+
 # ===============================
 # 1) Normal app code starts here
 # ===============================
 
 options(shiny.fullstacktrace = TRUE)
 options(warn = 1)
-
-Sys.setenv(
-  CHROMOTE_CHROME = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
-)
 
 library(shiny)
 library(bslib)
@@ -60,6 +99,12 @@ library(DBI)
 library(duckdb)
 library(glue)
 
+# modules
+library(parallel)
+library(grDevices)
+library(chromote)
+library(htmlwidgets)
+
 # Fallback markdown conversion (only used if files are missing)
 library(markdown)
 
@@ -67,20 +112,26 @@ options(shiny.maxRequestSize = 1500 * 1024^2)
 options(shiny.launch.browser = TRUE)
 
 get_app_dir <- function() {
-  if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
-    p <- rstudioapi::getActiveDocumentContext()$path
-    if (is.character(p) && length(p) == 1 && nzchar(p)) {
-      return(dirname(normalizePath(p, winslash = "/", mustWork = TRUE)))
-    }
+  # 1) If running as a script (Rscript), use the script path
+  cmdArgs <- commandArgs(trailingOnly = FALSE)
+  fileArg <- "--file="
+  script_path <- sub(fileArg, "", cmdArgs[grep(fileArg, cmdArgs)])
+  if (length(script_path) == 1 && nzchar(script_path)) {
+    return(dirname(normalizePath(script_path, winslash = "/", mustWork = TRUE)))
   }
+  
+  # 2) If running interactively (RStudio, VSCode, terminal), use sys.frames
   of <- tryCatch(sys.frame(1)$ofile, error = function(e) "")
   if (is.character(of) && length(of) == 1 && nzchar(of)) {
     return(dirname(normalizePath(of, winslash = "/", mustWork = TRUE)))
   }
+  
+  # 3) Fallback: working directory (Docker, Cloud Run)
   normalizePath(getwd(), winslash = "/", mustWork = TRUE)
 }
 
-app_dir <- get_app_dir()
+APP_DIR <- get_app_dir()
+
 message("app_dir = ", app_dir)
 
 json_path <- file.path(app_dir, "translations", "translation.json")
