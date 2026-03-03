@@ -1,70 +1,133 @@
 <!doctype html>
-<html><head>
-<meta charset="utf-8">
-<meta http-equiv="refresh" content="5">
-<title>Band‑Aid – Initial Setup</title>
-<style>
-:root{--blue:#0d6efd;--bg:#f8f9fa;--border:#dee2e6;--muted:#6c757d}
-body{font-family:system-ui,Arial,sans-serif;margin:3rem;color:var(--blue)}
-h1{margin-top:0;font-size:2rem}
-.box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem}
-.muted{color:var(--muted)}
-.progress{width:100%;background:#e9ecef;border-radius:6px;height:14px;overflow:hidden;margin-top:.5rem}
-.bar{height:100%;background:var(--blue);width:100%;transition:width .2s ease}
-.logs{margin-top:1rem;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92rem;white-space:pre-wrap;color:#0b4e9a}
-</style>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Band‑Aid – Initial Setup</title>
+
+  <style>
+    :root {
+      --blue: #0d6efd;
+      --bg: #f8f9fa;
+      --border: #dee2e6;
+      --muted: #6c757d;
+    }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      margin: 3rem;
+      color: var(--blue);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 2rem;
+    }
+    .box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+    }
+    .muted {
+      color: var(--muted);
+    }
+    .progress {
+      width: 100%;
+      background: #e9ecef;
+      border-radius: 6px;
+      height: 14px;
+      overflow: hidden;
+      margin-top: .5rem;
+    }
+    .bar {
+      height: 100%;
+      background: var(--blue);
+      width: 0;
+      transition: width .2s ease;
+    }
+    .logs {
+      margin-top: 1rem;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: .92rem;
+      white-space: pre-wrap;
+      color: #0b4e9a;
+    }
+  </style>
 </head>
+
 <body>
-<h1>Band‑Aid – Preparing your first run</h1>
-<div class="box">
-  <p id="msg">All set! Launching the app…</p>
-  <div class="progress"><div class="bar"></div></div>
-  <p class="muted">Please keep this tab open. The first setup can take 20–40 minutes depending on your network speed.</p>
-  <div id="logs" class="logs">[2026-03-03 09:14:38] App dir: C:/Users/BolducF/Documents/ShinyApps/Band-Aid
-[2026-03-03 09:14:38] Status page: C:/Users/BolducF/Documents/ShinyApps/Band-Aid/www/install_status.html
-[2026-03-03 09:14:38] [01/20] shiny
-[2026-03-03 09:14:39] ✓ Already present: shiny
-[2026-03-03 09:14:40] [02/20] bslib
-[2026-03-03 09:14:40] ✓ Already present: bslib
-[2026-03-03 09:14:40] [03/20] DT
-[2026-03-03 09:14:40] ✓ Already present: DT
-[2026-03-03 09:14:41] [04/20] readr
-[2026-03-03 09:14:41] ✓ Already present: readr
-[2026-03-03 09:14:41] [05/20] readxl
-[2026-03-03 09:14:41] ✓ Already present: readxl
-[2026-03-03 09:14:41] [06/20] shinyjs
-[2026-03-03 09:14:41] ✓ Already present: shinyjs
-[2026-03-03 09:14:41] [07/20] openxlsx
-[2026-03-03 09:14:41] ✓ Already present: openxlsx
-[2026-03-03 09:14:41] [08/20] dplyr
-[2026-03-03 09:14:41] ✓ Already present: dplyr
-[2026-03-03 09:14:42] [09/20] leaflet
-[2026-03-03 09:14:42] ✓ Already present: leaflet
-[2026-03-03 09:14:42] [10/20] leaflet.extras2
-[2026-03-03 09:14:42] ✓ Already present: leaflet.extras2
-[2026-03-03 09:14:42] [11/20] shinyjqui
-[2026-03-03 09:14:42] ✓ Already present: shinyjqui
-[2026-03-03 09:14:42] [12/20] viridisLite
-[2026-03-03 09:14:42] ✓ Already present: viridisLite
-[2026-03-03 09:14:42] [13/20] shiny.i18n
-[2026-03-03 09:14:42] ✓ Already present: shiny.i18n
-[2026-03-03 09:14:42] [14/20] DBI
-[2026-03-03 09:14:42] ✓ Already present: DBI
-[2026-03-03 09:14:42] [15/20] duckdb
-[2026-03-03 09:14:42] ✓ Already present: duckdb
-[2026-03-03 09:14:42] [16/20] glue
-[2026-03-03 09:14:42] ✓ Already present: glue
-[2026-03-03 09:14:42] [17/20] webshot2
-[2026-03-03 09:14:43] ✓ Already present: webshot2
-[2026-03-03 09:14:43] [18/20] chromote
-[2026-03-03 09:14:43] ✓ Already present: chromote
-[2026-03-03 09:14:43] [19/20] htmlwidgets
-[2026-03-03 09:14:43] ✓ Already present: htmlwidgets
-[2026-03-03 09:14:43] [20/20] markdown
-[2026-03-03 09:14:43] ✓ Already present: markdown
-  All dependencies are ready. Launching the app…</div>
-</div>
-<script>
-setTimeout(function(){ location.href = "http://127.0.0.1:8787"; }, 1500);
-</script>
-</body></html>
+
+  <h1>Band‑Aid – Preparing your first run</h1>
+
+  <div class="box">
+    <p id="msg">Starting…</p>
+
+    <div class="progress">
+      <div id="bar" class="bar" style="width:0%"></div>
+    </div>
+
+    <p class="muted">
+      Please keep this tab open. The first setup can take 20–40 minutes depending on your network speed.
+    </p>
+
+    <div id="logs" class="logs"></div>
+  </div>
+
+  <script>
+    /*
+      The R launcher writes into location.hash something like:
+
+      #{"msg":"Checking shiny","pct":42,"logs":"...","redirect":"http://127.0.0.1:8787"}
+
+      We read that here for display + for performing the redirect.
+    */
+    function readHashData() {
+      try {
+        return JSON.parse(decodeURIComponent(location.hash.substring(1)));
+      } catch (e) {
+        return {};
+      }
+    }
+
+    const data = readHashData();
+
+    // Update UI fields if present
+    if (data.msg)  document.getElementById("msg").textContent = data.msg;
+    if (data.logs) document.getElementById("logs").textContent = data.logs;
+    if (typeof data.pct === "number") {
+      document.getElementById("bar").style.width = Math.max(0, Math.min(100, data.pct)) + "%";
+    }
+
+    /*
+      POLLING REDIRECT LOGIC — avoids the “port not available” error.
+
+      We ping the redirect URL every second using an <img> element.
+      When ANY response comes back (even 404), we redirect.
+      That means the Shiny server is finally reachable.
+    */
+    const target = data.redirect;  // e.g. "http://127.0.0.1:8787"
+
+    function waitForServer() {
+      if (!target) return; // R hasn't set redirect yet
+
+      const img = new Image();
+
+      img.onload = () => {
+        // Server is reachable → redirect!
+        window.location.href = target;
+      };
+
+      img.onerror = () => {
+        // Server not ready yet → try again in 1s
+        setTimeout(waitForServer, 1000);
+      };
+
+      // Cache-buster
+      img.src = target + "/__ping__?_=" + Date.now();
+    }
+
+    // Start checking for app availability
+    waitForServer();
+
+  </script>
+
+</body>
+</html>
