@@ -42,33 +42,6 @@ set_chromium_path <- function() {
 
 set_chromium_path()
 
-# ===============================
-# 0) Ensure required packages are installed
-# ===============================
-required_pkgs <- c(
-  # Core app
-  "shiny", "bslib", "DT", "readr", "readxl", "shinyjs", "openxlsx",
-  "dplyr", "leaflet", "leaflet.extras2", "shinyjqui", "viridisLite",
-  # i18n + supporting
-  "shiny.i18n",
-  # DB
-  "DBI", "duckdb", "glue",
-  # Plot export (used in Plot module for mapshot2)
-  "webshot2", 'parallel', 'grDevices', 'chromote', 'htmlwidgets',
-  # For includeMarkdown() + markdownToHTML fallback
-  "markdown"
-)
-
-ensure_packages <- function(pkgs, repos = "https://cloud.r-project.org") {
-  missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
-  if (length(missing)) {
-    message("Installing missing packages: ", paste(missing, collapse = ", "))
-    install.packages(missing, repos = repos, dependencies = TRUE)
-  }
-  invisible(TRUE)
-}
-
-ensure_packages(required_pkgs)
 
 
 # ===============================
