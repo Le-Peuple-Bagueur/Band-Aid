@@ -1,1 +1,49 @@
-
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- Refresh every 5 seconds so updates written by R appear -->
+  <meta http-equiv="refresh" content="5">
+  <title>Band‑Aid – Initial Setup</title>
+  <style>
+    :root {
+      --blue: #0d6efd;
+      --bg: #f8f9fa;
+      --border: #dee2e6;
+      --muted: #6c757d;
+    }
+    body { font-family: system-ui, Arial, sans-serif; margin: 3rem; color: var(--blue); }
+    h1 { margin-top: 0; font-size: 2rem; }
+    .box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
+    .muted { color: var(--muted); }
+    .progress { width: 100%; background: #e9ecef; border-radius: 6px; height: 14px; overflow: hidden; margin-top: .5rem; }
+    .bar { height: 100%; background: var(--blue); width: 0; transition: width .2s ease; }
+    .logs { margin-top: 1rem; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .92rem; white-space: pre-wrap; color: #0b4e9a; }
+  </style>
+</head>
+<body>
+  <h1>Band‑Aid – Preparing your first run</h1>
+  <div class="box">
+    <p id="msg">Starting…</p>
+    <div class="progress"><div id="bar" class="bar" style="width:0%"></div></div>
+    <p class="muted">Please keep this tab open. The first setup can take 20–40 minutes depending on your network speed.</p>
+    <div id="logs" class="logs"></div>
+  </div>
+  <script>
+    // The R script rewrites this same file and injects a JSON object into the hash.
+    // This lets us display current message, progress, and a redirect when ready.
+    try {
+      const data = JSON.parse(decodeURIComponent(location.hash.substring(1) || "{}"));
+      if (data.msg) document.getElementById('msg').textContent = data.msg;
+      if (data.pct != null) document.getElementById('bar').style.width = (Math.max(0, Math.min(100, data.pct)) + '%');
+      if (data.logs) document.getElementById('logs').textContent = data.logs;
+      if (data.redirect) {
+        // Small delay so the last status is visible
+        setTimeout(() => { location.href = data.redirect; }, 1500);
+      }
+    } catch(e) {
+      // ignore parse errors
+    }
+  </script>
+</body>
+</html>
