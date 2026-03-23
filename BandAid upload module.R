@@ -349,6 +349,33 @@ apply_lookup_joins_to_uploaded <- function(con, lookups_dir, tr = function(x) x)
   print(select_add)
   
   
+  # add Direct.Return after Corr.Year
+b_year_col <- find_col(uploaded_names, "B.Year")
+if (is.na(b_year_col)) b_year_col <- find_col(uploaded_names, "B Year")
+
+if (!is.na(r_month_col) && !is.na(r_year_col) && !is.na(b_year_col)) {
+
+  direct_sql <- paste0(
+    "CASE
+       WHEN TRY_CAST(u.", sql_ident(con, b_year_col), " AS INTEGER) IS NOT NULL
+            AND TRY_CAST(u.", sql_ident(con, b_year_col), " AS INTEGER) =
+              (CASE
+                 WHEN TRY_CAST(u.", sql_ident(con, r_month_col), " AS INTEGER) IS NOT NULL
+                      AND TRY_CAST(u.", sql_ident(con, r_month_col), " AS INTEGER) < 6
+                 THEN TRY_CAST(u.", sql_ident(con, r_year_col), " AS INTEGER) - 1
+                 ELSE TRY_CAST(u.", sql_ident(con, r_year_col), " AS INTEGER)
+               END)
+       THEN 'TRUE'
+       ELSE 'FALSE'
+     END AS ", sql_ident(con, "direct.return")
+  )
+
+  select_add <- c(select_add, direct_sql)
+  existing_cols <- c(existing_cols, "direct.return")
+
+} else {
+  message("[Upload] Skipping direct.return (missing B.Year or R.Month/R.Year)")
+}
   
   # ---- ONE PASS: materialize enriched uploaded
   tmp_tbl <- paste0("uploaded_tmp_", as.integer(stats::runif(1, 1e6, 9e6)))
