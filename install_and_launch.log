@@ -1,43 +1,45 @@
-[2026-03-03 09:14:38] App dir: C:/Users/BolducF/Documents/ShinyApps/Band-Aid
-[2026-03-03 09:14:38] Status page: C:/Users/BolducF/Documents/ShinyApps/Band-Aid/www/install_status.html
-[2026-03-03 09:14:38] [01/20] shiny
-[2026-03-03 09:14:39] ✓ Already present: shiny
-[2026-03-03 09:14:40] [02/20] bslib
-[2026-03-03 09:14:40] ✓ Already present: bslib
-[2026-03-03 09:14:40] [03/20] DT
-[2026-03-03 09:14:40] ✓ Already present: DT
-[2026-03-03 09:14:41] [04/20] readr
-[2026-03-03 09:14:41] ✓ Already present: readr
-[2026-03-03 09:14:41] [05/20] readxl
-[2026-03-03 09:14:41] ✓ Already present: readxl
-[2026-03-03 09:14:41] [06/20] shinyjs
-[2026-03-03 09:14:41] ✓ Already present: shinyjs
-[2026-03-03 09:14:41] [07/20] openxlsx
-[2026-03-03 09:14:41] ✓ Already present: openxlsx
-[2026-03-03 09:14:41] [08/20] dplyr
-[2026-03-03 09:14:41] ✓ Already present: dplyr
-[2026-03-03 09:14:42] [09/20] leaflet
-[2026-03-03 09:14:42] ✓ Already present: leaflet
-[2026-03-03 09:14:42] [10/20] leaflet.extras2
-[2026-03-03 09:14:42] ✓ Already present: leaflet.extras2
-[2026-03-03 09:14:42] [11/20] shinyjqui
-[2026-03-03 09:14:42] ✓ Already present: shinyjqui
-[2026-03-03 09:14:42] [12/20] viridisLite
-[2026-03-03 09:14:42] ✓ Already present: viridisLite
-[2026-03-03 09:14:42] [13/20] shiny.i18n
-[2026-03-03 09:14:42] ✓ Already present: shiny.i18n
-[2026-03-03 09:14:42] [14/20] DBI
-[2026-03-03 09:14:42] ✓ Already present: DBI
-[2026-03-03 09:14:42] [15/20] duckdb
-[2026-03-03 09:14:42] ✓ Already present: duckdb
-[2026-03-03 09:14:42] [16/20] glue
-[2026-03-03 09:14:42] ✓ Already present: glue
-[2026-03-03 09:14:42] [17/20] webshot2
-[2026-03-03 09:14:43] ✓ Already present: webshot2
-[2026-03-03 09:14:43] [18/20] chromote
-[2026-03-03 09:14:43] ✓ Already present: chromote
-[2026-03-03 09:14:43] [19/20] htmlwidgets
-[2026-03-03 09:14:43] ✓ Already present: htmlwidgets
-[2026-03-03 09:14:43] [20/20] markdown
-[2026-03-03 09:14:43] ✓ Already present: markdown
-[2026-03-03 09:14:43] All dependencies are ready. Launching the app…
+[2026-03-23 14:20:32] App dir: C:/Users/BolducF/Documents/ShinyApps/Band-Aid
+[2026-03-23 14:20:32] R version: R version 4.4.2 (2024-10-31 ucrt)
+[2026-03-23 14:20:32] CRAN mirror: https://cloud.r-project.org
+[2026-03-23 14:20:32] Download timeout: 300s
+[2026-03-23 14:20:32] [01/20] shiny
+[2026-03-23 14:20:32] ✓ Already present: shiny
+[2026-03-23 14:20:32] [02/20] bslib
+[2026-03-23 14:20:32] ✓ Already present: bslib
+[2026-03-23 14:20:32] [03/20] DT
+[2026-03-23 14:20:32] ✓ Already present: DT
+[2026-03-23 14:20:32] [04/20] readr
+[2026-03-23 14:20:32] ✓ Already present: readr
+[2026-03-23 14:20:32] [05/20] readxl
+[2026-03-23 14:20:32] ✓ Already present: readxl
+[2026-03-23 14:20:32] [06/20] shinyjs
+[2026-03-23 14:20:33] ✓ Already present: shinyjs
+[2026-03-23 14:20:33] [07/20] openxlsx
+[2026-03-23 14:20:33] ✓ Already present: openxlsx
+[2026-03-23 14:20:33] [08/20] dplyr
+[2026-03-23 14:20:33] ✓ Already present: dplyr
+[2026-03-23 14:20:33] [09/20] leaflet
+[2026-03-23 14:20:33] ✓ Already present: leaflet
+[2026-03-23 14:20:33] [10/20] leaflet.extras2
+[2026-03-23 14:20:33] ✓ Already present: leaflet.extras2
+[2026-03-23 14:20:33] [11/20] shinyjqui
+[2026-03-23 14:20:33] ✓ Already present: shinyjqui
+[2026-03-23 14:20:33] [12/20] viridisLite
+[2026-03-23 14:20:33] ✓ Already present: viridisLite
+[2026-03-23 14:20:33] [13/20] shiny.i18n
+[2026-03-23 14:20:33] ✓ Already present: shiny.i18n
+[2026-03-23 14:20:33] [14/20] DBI
+[2026-03-23 14:20:33] ✓ Already present: DBI
+[2026-03-23 14:20:33] [15/20] duckdb
+[2026-03-23 14:20:33] ✓ Already present: duckdb
+[2026-03-23 14:20:33] [16/20] glue
+[2026-03-23 14:20:33] ✓ Already present: glue
+[2026-03-23 14:20:33] [17/20] webshot2
+[2026-03-23 14:20:34] ✓ Already present: webshot2
+[2026-03-23 14:20:34] [18/20] chromote
+[2026-03-23 14:20:34] ✓ Already present: chromote
+[2026-03-23 14:20:34] [19/20] htmlwidgets
+[2026-03-23 14:20:34] ✓ Already present: htmlwidgets
+[2026-03-23 14:20:34] [20/20] markdown
+[2026-03-23 14:20:34] ✓ Already present: markdown
+[2026-03-23 14:20:34] All dependencies are ready. Launching the app…

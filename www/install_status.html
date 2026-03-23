@@ -1,152 +1,72 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Band‑Aid – Initial Setup</title>
-
-  <!-- Optional: refresh to reflect new hash/log content if your R script reopens the file.
-       You can raise/lower the interval or remove this line entirely if you prefer manual refresh. -->
-  <meta http-equiv="refresh" content="8">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    :root {
-      --blue: #0d6efd;
-      --bg: #f8f9fa;
-      --border: #dee2e6;
-      --muted: #6c757d;
-    }
-    html, body { height: 100%; }
-    body {
-      font-family: system-ui, Arial, sans-serif;
-      margin: 3rem;
-      color: var(--blue);
-      background: #ffffff;
-    }
-    h1 {
-      margin-top: 0;
-      font-size: 2rem;
-      line-height: 1.2;
-    }
-    .box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      max-width: 980px;
-    }
-    .muted { color: var(--muted); margin-top: .5rem; }
-    .progress {
-      width: 100%;
-      background: #e9ecef;
-      border-radius: 6px;
-      height: 14px;
-      overflow: hidden;
-      margin-top: .5rem;
-    }
-    .bar {
-      height: 100%;
-      background: var(--blue);
-      width: 0;
-      transition: width .2s ease;
-    }
-    .logs {
-      margin-top: 1rem;
-      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
-      font-size: .92rem;
-      white-space: pre-wrap;
-      color: #0b4e9a;
-    }
-    .hint {
-      margin-top: .75rem;
-      font-size: .9rem;
-      color: #0b4e9a;
-    }
-    .hidden { display: none !important; }
-  </style>
+<html><head>
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="5">
+<title>Band&#x2011;Aid &#x2013; Initial Setup</title>
+<style>
+:root{--blue:#0d6efd;--bg:#f8f9fa;--border:#dee2e6;--muted:#6c757d}
+body{font-family:system-ui,Arial,sans-serif;margin:3rem;color:var(--blue)}
+h1{margin-top:0;font-size:2rem}
+.box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem}
+.muted{color:var(--muted)}
+.progress{width:100%;background:#e9ecef;border-radius:6px;height:14px;overflow:hidden;margin-top:.5rem}
+.bar{height:100%;background:var(--blue);width:100%;transition:width .2s ease}
+.logs{margin-top:1rem;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92rem;white-space:pre-wrap;color:#0b4e9a}
+</style>
 </head>
-
 <body>
-  <h1>Band‑Aid – Preparing your first run</h1>
-
-  <div class="box" aria-live="polite" aria-atomic="true">
-    <p id="msg">Starting…</p>
-
-    <div class="progress" aria-label="Progress">
-      <div id="bar" class="bar" style="width:0%"></div>
-    </div>
-
-    <p class="muted">
-      Please keep this tab open. The first setup can take 20–40 minutes depending on your network speed.
-    </p>
-
-    <div id="logs" class="logs"></div>
-
-    <div id="polling-hint" class="hint hidden">
-      Waiting for the application to start on <span id="target-url"></span>…
-    </div>
-  </div>
-
-  <script>
-    // --- Read installer data from location.hash ---
-    // Expected format written by your R script:
-    // #{"msg":"Checking shiny","pct":42,"logs":"...","redirect":"http://127.0.0.1:8787"}
-    function readHashData() {
-      try {
-        var raw = location.hash.substring(1);
-        if (!raw) return {};
-        return JSON.parse(decodeURIComponent(raw));
-      } catch (e) {
-        return {};
-      }
-    }
-
-    function setText(id, text) {
-      var el = document.getElementById(id);
-      if (el && typeof text === "string") el.textContent = text;
-    }
-
-    (function init() {
-      var data = readHashData();
-
-      // Message
-      if (data.msg) setText("msg", data.msg);
-
-      // Logs (can be large; still fine for local use)
-      if (typeof data.logs === "string") setText("logs", data.logs);
-
-      // Progress
-      if (typeof data.pct === "number" && isFinite(data.pct)) {
-        var pct = Math.max(0, Math.min(100, Math.floor(data.pct)));
-        var bar = document.getElementById("bar");
-        if (bar) bar.style.width = pct + "%";
-      }
-
-      // Redirect polling: only if a target was provided
-      var target = (typeof data.redirect === "string") ? data.redirect : "";
-      if (target) {
-        // Show a small text so users know we’re about to auto-open the app
-        var hint = document.getElementById("polling-hint");
-        var targetSpan = document.getElementById("target-url");
-        if (hint) hint.classList.remove("hidden");
-        if (targetSpan) targetSpan.textContent = target;
-
-        // Poll the server via an <img> ping. Any response means the server is up.
-        function waitForServer() {
-          var img = new Image();
-          img.onload = function() { window.location.href = target; };
-          img.onerror = function() { setTimeout(waitForServer, 1000); };
-          // Strip trailing slashes, then probe a path with cache-busting
-          var base = target.replace(/\/+$/, "");
-          img.src = base + "/__ping__?_=" + Date.now();
-        }
-        waitForServer();
-      }
-    })();
-
-    // Optional: if another process updates the hash while the page stays open,
-    // you can listen and re-apply changes without reloading the whole page.
-    // window.addEventListener("hashchange", function() { location.reload(); });
-  </script>
-</body>
-</html>
+<h1>Band&#x2011;Aid &#x2013; Preparing your first run</h1>
+<div class="box">
+  <p id="msg">All set! Launching the app…</p>
+  <div class="progress"><div class="bar"></div></div>
+  <p class="muted">Please keep this tab open. The first setup can take 20&#x2013;40 minutes depending on your network speed.</p>
+  <div id="logs" class="logs">[2026-03-23 14:20:32] App dir: C:/Users/BolducF/Documents/ShinyApps/Band-Aid
+[2026-03-23 14:20:32] R version: R version 4.4.2 (2024-10-31 ucrt)
+[2026-03-23 14:20:32] CRAN mirror: https://cloud.r-project.org
+[2026-03-23 14:20:32] Download timeout: 300s
+[2026-03-23 14:20:32] [01/20] shiny
+[2026-03-23 14:20:32] ✓ Already present: shiny
+[2026-03-23 14:20:32] [02/20] bslib
+[2026-03-23 14:20:32] ✓ Already present: bslib
+[2026-03-23 14:20:32] [03/20] DT
+[2026-03-23 14:20:32] ✓ Already present: DT
+[2026-03-23 14:20:32] [04/20] readr
+[2026-03-23 14:20:32] ✓ Already present: readr
+[2026-03-23 14:20:32] [05/20] readxl
+[2026-03-23 14:20:32] ✓ Already present: readxl
+[2026-03-23 14:20:32] [06/20] shinyjs
+[2026-03-23 14:20:33] ✓ Already present: shinyjs
+[2026-03-23 14:20:33] [07/20] openxlsx
+[2026-03-23 14:20:33] ✓ Already present: openxlsx
+[2026-03-23 14:20:33] [08/20] dplyr
+[2026-03-23 14:20:33] ✓ Already present: dplyr
+[2026-03-23 14:20:33] [09/20] leaflet
+[2026-03-23 14:20:33] ✓ Already present: leaflet
+[2026-03-23 14:20:33] [10/20] leaflet.extras2
+[2026-03-23 14:20:33] ✓ Already present: leaflet.extras2
+[2026-03-23 14:20:33] [11/20] shinyjqui
+[2026-03-23 14:20:33] ✓ Already present: shinyjqui
+[2026-03-23 14:20:33] [12/20] viridisLite
+[2026-03-23 14:20:33] ✓ Already present: viridisLite
+[2026-03-23 14:20:33] [13/20] shiny.i18n
+[2026-03-23 14:20:33] ✓ Already present: shiny.i18n
+[2026-03-23 14:20:33] [14/20] DBI
+[2026-03-23 14:20:33] ✓ Already present: DBI
+[2026-03-23 14:20:33] [15/20] duckdb
+[2026-03-23 14:20:33] ✓ Already present: duckdb
+[2026-03-23 14:20:33] [16/20] glue
+[2026-03-23 14:20:33] ✓ Already present: glue
+[2026-03-23 14:20:33] [17/20] webshot2
+[2026-03-23 14:20:34] ✓ Already present: webshot2
+[2026-03-23 14:20:34] [18/20] chromote
+[2026-03-23 14:20:34] ✓ Already present: chromote
+[2026-03-23 14:20:34] [19/20] htmlwidgets
+[2026-03-23 14:20:34] ✓ Already present: htmlwidgets
+[2026-03-23 14:20:34] [20/20] markdown
+[2026-03-23 14:20:34] ✓ Already present: markdown
+  All dependencies are ready. Launching the app…</div>
+</div>
+<script>
+setTimeout(function(){ location.href = "http://127.0.0.1:8787"; }, 1500);
+</script>
+</body></html>
