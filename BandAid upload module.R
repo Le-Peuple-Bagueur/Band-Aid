@@ -488,7 +488,6 @@ mod_upload_server <- function(id, lang) {
           FROM read_csv_auto(
             '{csv_path}',
             header = TRUE,
-            all_varchar = TRUE,
             sample_size = {sample_size},
             nullstr = ['-', '--', 'NA', 'N/A', '']
           );
